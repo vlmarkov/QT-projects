@@ -1,2 +1,3 @@
-# qt-projects
-qt/c++ applications
+# QT-projects
+
+- QT/C++ applications
