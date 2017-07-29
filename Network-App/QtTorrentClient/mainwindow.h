@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef _MAIN_WINDOW_H_
+#define _MAIN_WINDOW_H_
 
 #include <QMainWindow>
 
@@ -11,12 +11,12 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
-public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    public:
+        explicit MainWindow(QWidget *parent = 0);
+        ~MainWindow();
 
-private:
-    Ui::MainWindow *ui;
+    private:
+        Ui::MainWindow *ui;
 };
 
-#endif // MAINWINDOW_H
+#endif // _MAIN_WINDOW_H_
