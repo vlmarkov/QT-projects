@@ -131,6 +131,7 @@ void CpuMonitor::hwUsageGather(bool activate)
 void CpuMonitor::hwUsageShowRealTime()
 {
     while (1) {
+        this->hwInfoGet();
         this->ui_->lcdNumber->display(std::stoi(this->cpu_));
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
