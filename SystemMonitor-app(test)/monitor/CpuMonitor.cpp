@@ -119,6 +119,11 @@ void CpuMonitor::hwUsageGather(bool activate)
 
 void CpuMonitor::hwUsageShow()
 {
-    system("./plot_script.sh");
+    //system("./plot_script.sh");
+
+    std::cout << __FUNCTION__ << __LINE__ << std::endl;
+    std::thread cpuUsage(&CpuMonitor::hwUsageGather, this, true);
+    std::cout << __FUNCTION__ << __LINE__ << std::endl;
+    cpuUsage.join();
     //system("rm -f CpuUsage.dat");
 }

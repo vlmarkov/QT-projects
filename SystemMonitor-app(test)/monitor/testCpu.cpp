@@ -6,7 +6,7 @@ int main(int argc, char const *argv[])
 
     cpuMonitor->hwInfoGet();
     cpuMonitor->hwInfoShow();
-    cpuMonitor->hwUsageGather(true);
+    //cpuMonitor->hwUsageGather(true);
     cpuMonitor->hwUsageShow();
 
     delete cpuMonitor;
