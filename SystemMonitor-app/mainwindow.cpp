@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->widget->graph(0)->setPen(QPen(QColor(40, 110, 255)));
     ui->widget->axisRect()->setupFullAxesBox();
     ui->widget->yAxis->setRange(0, 10000);
+    ui->widget->yAxis->setLabel("Frequency, Mhz");
 
     connect(ui->widget->xAxis,
             SIGNAL(rangeChanged(QCPRange)),
