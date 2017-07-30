@@ -1,4 +1,5 @@
 #include "cpumonitor.h"
+#include "qcustomplot.h"
 
 #include <stdlib.h>
 #include <iostream>
@@ -17,8 +18,7 @@ CpuMonitor::CpuMonitor(Ui::MainWindow* ui)
 
 CpuMonitor::~CpuMonitor()
 {
-    this->cpuUsageTread_->join();
-    delete this->cpuUsageTread_;
+
 }
 
 void CpuMonitor::hwInfoGet()
@@ -130,19 +130,30 @@ void CpuMonitor::hwUsageGather(bool activate)
 
 void CpuMonitor::hwUsageShowRealTime()
 {
-    while (1) {
-        this->hwInfoGet();
-        this->ui_->lcdNumber->display(std::stoi(this->cpu_));
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+    //std::cout << __FUNCTION__ << std::endl;
 
+    static QTime time(QTime::currentTime());
+    static long i = 0;
+    // calculate two new data points:
+    double key = time.elapsed()/1000.0; // time elapsed since start of demo, in seconds
+    static double lastPointKey = 0;
+    if (key-lastPointKey > 0.002) // at most add point every 2 ms
+    {
+        this->hwInfoGet();
+        this->ui_->widget->graph(0)->addData(key, double(std::stoi(this->cpu_)));
+        std::cout << std::stoi(this->cpu_) << std::endl;
+        lastPointKey = key;
+        i++;
     }
+    this->ui_->widget->xAxis->setRange(key, 8, Qt::AlignRight);
+    this->ui_->widget->replot();
+
 }
 
 void CpuMonitor::hwUsageShow()
 {
+    //std::cout << __FUNCTION__ << std::endl;
     //system("./plot_script.sh");
     //system("rm -f CpuUsage.dat");
-    //this->hwUsageShowRealTime();
-    this->cpuUsageTread_= new std::thread(&CpuMonitor::hwUsageShowRealTime, this);
-    //cpuUsage.detach();
+    this->hwUsageShowRealTime();
 }

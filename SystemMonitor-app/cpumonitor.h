@@ -28,7 +28,6 @@ class CpuMonitor : public AbstractSystemMonitor
         void hwInfoAsign(std::string line, int lnNum);
 
          Ui::MainWindow* ui_;
-         std::thread*    cpuUsageTread_;
 
     public:
         CpuMonitor(Ui::MainWindow* ui);

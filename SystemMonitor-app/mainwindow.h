@@ -21,6 +21,10 @@ public:
 private:
     AbstractSystemMonitor* cpuMonitor;
     Ui::MainWindow *ui;
+    QTimer* dataTimer;
+
+public slots:
+    void realtimeDataSlot();
 };
 
 #endif // MAINWINDOW_H

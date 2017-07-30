@@ -6,7 +6,7 @@
 
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
 TARGET = SystemMonitor
 TEMPLATE = app
@@ -14,11 +14,13 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    cpumonitor.cpp
+    cpumonitor.cpp \
+    qcustomplot.cpp
 
 HEADERS  += mainwindow.h \
     abstractsystemmonitor.h \
-    cpumonitor.h
+    cpumonitor.h \
+    qcustomplot.h
 
 FORMS    += mainwindow.ui
 
