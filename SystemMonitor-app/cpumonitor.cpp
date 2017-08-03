@@ -9,6 +9,7 @@
 #include <chrono>
 #include <thread>
 
+
 #define HW_CPU_INFO_FILE "hwCpuInfo.txt"
 
 CpuMonitor::CpuMonitor(Ui::MainWindow* ui)
@@ -18,13 +19,14 @@ CpuMonitor::CpuMonitor(Ui::MainWindow* ui)
 
 CpuMonitor::~CpuMonitor()
 {
-
+    // TODO
 }
 
 void CpuMonitor::hwInfoGet()
 {
+
     try {
-        if (system("lscpu > "HW_CPU_INFO_FILE) != 0) {
+        if (system("cat /proc/cpuinfo > "HW_CPU_INFO_FILE) != 0) {
             throw "Can't get cpu info from os";
         }
 
@@ -34,6 +36,9 @@ void CpuMonitor::hwInfoGet()
             int lnNum = 0;
             while (getline(hwCpuInfoFile, line)) {
                 this->hwInfoAsign(line, lnNum++);
+                if (lnNum == 28) {
+                    lnNum = 0;
+                }
             }
             hwCpuInfoFile.close();
             system("rm -f "HW_CPU_INFO_FILE);
@@ -60,100 +65,73 @@ void CpuMonitor::hwInfoAsign(std::string line, int lnNum)
 
     line.erase(line.begin(), line.begin() + found);
 
-    switch(lnNum) {
-        case 0 : this->arch_ = line; break;
-        case 1 : this->bit_  = line; break;
-        case 2 : this->byte_ = line; break;
-        case 3 : this->cores_  = line; break;
-        case 4 : break;
-        case 5 : this->threads_ = line; break;
-        case 6 :
-        case 8 : break;
-        case 9 : this->vendor_ = line; break;
-        case 10:
-        case 11: break;
-        case 12: this->model_ = line; break;
-        case 13: break;
-        case 14: this->cpu_ = line; break;
-        case 15:
-        case 17: break;
-        case 18: this->l1d_ = line; break;
-        case 19: this->l1i_ = line; break;
-        case 20: this->l2_ = line; break;
-        case 21: this->l3_ = line; break;
-        case 22: break;
-        case 23: this->flags_ = line; break;
+    switch (lnNum)
+    {
+        //case 0 : std::cout << line << std::endl; break;
+        case 1 : this->vendorId_  = line; break;
+        case 4 : this->modelName_ = line; break;
+        case 7 : cpuFrequency_.push_back(line); break;
+        case 12: this->cpuCores_ = line; break;
+        case 19: this->flags_ = line; break;
     }
+
 }
 
 void CpuMonitor::hwInfoShow()
 {
-/*
-    std::cout << "Arch      : " << this->arch_ << std::endl;
-    std::cout << "Bit       : " << this->bit_  << std::endl;
-    std::cout << "Byte order: " << this->byte_ << std::endl;
-    std::cout << "Cores     : " << this->cores_  << std::endl;
-    std::cout << "Threads   : " << this->threads_ << std::endl;
-    std::cout << "Vendor    : " << this->vendor_ << std::endl;
-    std::cout << "Model name: " << this->model_ << std::endl;
-    std::cout << "Cpu freq  : " << this->cpu_ << std::endl;
-    std::cout << "L1d       : " << this->l1d_ << std::endl;
-    std::cout << "L1i       : " << this->l1i_ << std::endl;
-    std::cout << "L2        : " << this->l2_ << std::endl;
-    std::cout << "L3        : " << this->l3_ << std::endl;
-    std::cout << "Flags     : " << this->flags_ << std::endl;
-*/
+    //this->ui_->Arch_txt->setText(QString::fromUtf8(this->arch_.c_str()));
+    this->ui_->Vendor_txt->setText(QString::fromUtf8(this->vendorId_.c_str()));
+    this->ui_->Model_txt->setText(QString::fromUtf8(this->modelName_.c_str()));
+    this->ui_->Cores_txt->setText(QString::fromUtf8(this->cpuCores_.c_str()));
 
-    this->ui_->Arch_txt->setText(QString::fromUtf8(this->arch_.c_str()));
-    this->ui_->Vendor_txt->setText(QString::fromUtf8(this->vendor_.c_str()));
-    this->ui_->Model_txt->setText(QString::fromUtf8(this->model_.c_str()));
-    this->ui_->Cores_txt->setText(QString::fromUtf8(this->cores_.c_str()));
+    for (auto i = 0; i != cpuFrequency_.size(); ++i) {
+        this->ui_->widget->addGraph();
+        switch (i)
+        {
+            case 0: this->ui_->widget->graph(i)->setPen(QPen(QColor(0, 0, 255))); break;
+            case 1: this->ui_->widget->graph(i)->setPen(QPen(QColor(0, 255, 0))); break;
+            case 2: this->ui_->widget->graph(i)->setPen(QPen(QColor(255, 0, 0))); break;
+            case 3: this->ui_->widget->graph(i)->setPen(QPen(QColor(150, 0, 255))); break;
+            case 4: this->ui_->widget->graph(i)->setPen(QPen(QColor(0, 150, 255))); break;
+            case 5: this->ui_->widget->graph(i)->setPen(QPen(QColor(255, 0, 150))); break;
+            case 6: this->ui_->widget->graph(i)->setPen(QPen(QColor(255, 200, 200))); break;
+            case 7: this->ui_->widget->graph(i)->setPen(QPen(QColor(10, 250, 200))); break;
+            defualt: this->ui_->widget->graph(i)->setPen(QPen(QColor(0, 0, 0))); break;
+        }
+    }
 }
 
 void CpuMonitor::hwUsageGather(bool activate)
 {
-    int time = 0;
-    std::ofstream plotFile;
-
-    plotFile.open ("CpuUsage.dat");
-    plotFile.close();
-
-    while (time != 10) {
-        plotFile.open ("CpuUsage.dat", std::ios::app);
-        this->hwInfoGet();
-        plotFile << time << "\t" << this->cpu_ << std::endl;
-        plotFile.close();
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        time++;
-    }
+    return;
 }
 
 void CpuMonitor::hwUsageShowRealTime()
 {
-    //std::cout << __FUNCTION__ << std::endl;
-
     static QTime time(QTime::currentTime());
     static long i = 0;
-    // calculate two new data points:
-    double key = time.elapsed()/1000.0; // time elapsed since start of demo, in seconds
+
+    // Calculate two new data points:
+    double key = time.elapsed()/1000.0;
     static double lastPointKey = 0;
-    if (key-lastPointKey > 0.002) // at most add point every 2 ms
+
+    if (key-lastPointKey > 0.002) // Every 2 ms
     {
         this->hwInfoGet();
-        this->ui_->widget->graph(0)->addData(key, double(std::stoi(this->cpu_)));
-        std::cout << std::stoi(this->cpu_) << std::endl;
+        for (auto i = 0; i != cpuFrequency_.size(); ++i) {
+            this->ui_->widget->graph(i)->addData(key,
+                stod(this->cpuFrequency_[i]));
+        }
         lastPointKey = key;
         i++;
     }
     this->ui_->widget->xAxis->setRange(key, 8, Qt::AlignRight);
     this->ui_->widget->replot();
+    this->cpuFrequency_.clear();
 
 }
 
 void CpuMonitor::hwUsageShow()
 {
-    //std::cout << __FUNCTION__ << std::endl;
-    //system("./plot_script.sh");
-    //system("rm -f CpuUsage.dat");
     this->hwUsageShowRealTime();
 }

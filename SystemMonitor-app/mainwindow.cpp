@@ -18,20 +18,19 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->dataTimer = new QTimer(this);
 
-    ui->widget->addGraph(); // blue line
-    ui->widget->graph(0)->setPen(QPen(QColor(40, 110, 255)));
-    ui->widget->axisRect()->setupFullAxesBox();
-    ui->widget->yAxis->setRange(0, 10000);
-    ui->widget->yAxis->setLabel("Frequency, Mhz");
+    this->ui->widget->axisRect()->setupFullAxesBox();
+    this->ui->widget->yAxis->setRange(0, 10000);
+    this->ui->widget->yAxis->setLabel("Frequency, Mhz");
+    this->ui->widget->xAxis->setLabel("Time, sec");
 
-    connect(ui->widget->xAxis,
+    connect(this->ui->widget->xAxis,
             SIGNAL(rangeChanged(QCPRange)),
-            ui->widget->xAxis2,
+            this->ui->widget->xAxis2,
             SLOT(setRange(QCPRange)));
 
-    connect(ui->widget->yAxis,
+    connect(this->ui->widget->yAxis,
             SIGNAL(rangeChanged(QCPRange)),
-            ui->widget->yAxis2,
+            this->ui->widget->yAxis2,
             SLOT(setRange(QCPRange)));
 
     connect(dataTimer, SIGNAL(timeout()), this, SLOT(realtimeDataSlot()));
