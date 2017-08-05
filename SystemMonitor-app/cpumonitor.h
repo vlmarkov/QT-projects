@@ -29,8 +29,9 @@ class CpuMonitor : public AbstractSystemMonitor, QObject
         void createGraph();
         void connectSignalSlot();
 
-        void parseCpuFrequencyUsage(std::string str);
-        void readCpuFrequencyUsage(const std::string sysPath);
+        void parseCpuFrequencyUsage(std::string& str);
+        void readCpuFrequencyUsage();
+        uint32_t readCpuFrequencyMax();
 
     public:
         CpuMonitor(Ui::MainWindow* ui);

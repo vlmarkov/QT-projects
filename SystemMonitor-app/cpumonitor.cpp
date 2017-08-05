@@ -49,8 +49,8 @@ void CpuMonitor::hwInfoGet()
         this->hwCoresNum_  = data.num_cores;
         this->logcoresNum_ = data.num_logical_cpus;
 
-        this->readCpuFrequencyUsage("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq");
-
+        this->minFrequency_ = 0;
+        this->maxFrequency_ = readCpuFrequencyMax();
     } catch (std::string err) {
         std::cerr << err << std::endl;
         exit(1); // TODO
@@ -82,25 +82,22 @@ void CpuMonitor::hwUsageGather(bool activate)
 void CpuMonitor::hwUsageShow()
 {
     static QTime time(QTime::currentTime());
+    static double lastTimePoint = 0;
 
     // Calculate two new data points:
-    double key = time.elapsed()/1000.0;
-    static double lastPointKey = 0;
+    double timePoint = time.elapsed()/1000.0;
 
-    if (key-lastPointKey > 0.2) // Every 200 ms
+    if (timePoint - lastTimePoint > 0.100) // Every 100 ms
     {
-        this->readCpuFrequencyUsage("/proc/cpuinfo");
+        this->readCpuFrequencyUsage();
         for (auto i = 0; i < this->hwCoresNum_; ++i) {
-            this->userInterface_->CpuUsageGraph->graph(i)->addData(key,
-                this->currFreqUsage_[i]);
+            this->userInterface_->CpuUsageGraph->graph(i)->addData(timePoint, this->currFreqUsage_[i]);
         }
-        lastPointKey = key;
+        lastTimePoint = timePoint;
     }
 
-    this->userInterface_->CpuUsageGraph->xAxis->setRange(key, 8, Qt::AlignRight);
+    this->userInterface_->CpuUsageGraph->xAxis->setRange(timePoint, 8, Qt::AlignRight);
     this->userInterface_->CpuUsageGraph->replot();
-
-    this->currFreqUsage_.clear();
 }
 
 void CpuMonitor::createGraph()
@@ -115,6 +112,7 @@ void CpuMonitor::createGraph()
 
     // TODO
     for (auto i = 0; i != this->hwCoresNum_; ++i) {
+        this->currFreqUsage_.push_back(0.0);
         this->userInterface_->CpuUsageGraph->addGraph();
         switch (i)
         {
@@ -140,33 +138,42 @@ void CpuMonitor::connectSignalSlot()
             this->userInterface_->CpuUsageGraph->yAxis2, SLOT(setRange(QCPRange)));
 }
 
-void CpuMonitor::readCpuFrequencyUsage(const std::string sysPath)
+void CpuMonitor::readCpuFrequencyUsage()
 {
-    if (sysPath.size() == 0)
-        throw "Not valid system path";
-
-    std::ifstream sysFile(sysPath);
-    if (!sysFile.is_open())
-        throw std::string("Can't read" + std::string(sysPath));
-
-    std::string line;
-    if (sysPath.compare("/proc/cpuinfo") == 0) {
+    std::ifstream sysFile("/proc/cpuinfo", std::ios::in);
+    if (sysFile.is_open()) {
+        std::string line;
         while(getline(sysFile, line)) {
             this->parseCpuFrequencyUsage(line);
         }
+        sysFile.close();
     } else {
-        getline(sysFile, line);
-        this->maxFrequency_ = stoi(line) / 1000;
+        throw "Can't read proc cpu";
     }
-    sysFile.close();
 }
 
-void CpuMonitor::parseCpuFrequencyUsage(std::string str)
+uint32_t CpuMonitor::readCpuFrequencyMax()
 {
-    if (str.find("MHz") == std::string::npos)
+    uint32_t maxFrequency = 10000000;
+    std::ifstream sysFile("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq", std::ios::in);
+    if (sysFile.is_open()) {
+        std::string line;
+        getline(sysFile, line);
+        maxFrequency = stoi(line);
+        sysFile.close();
+    }
+    return maxFrequency / 1000;
+}
+
+void CpuMonitor::parseCpuFrequencyUsage(std::string& str)
+{
+    static auto coreNumber = 0;
+
+    std::size_t found = str.find("MHz");
+    if (found == std::string::npos)
         return;
 
-    std::size_t found = str.find(":");
+    found = str.find(":");
     if (found == std::string::npos)
         return;
 
@@ -177,5 +184,8 @@ void CpuMonitor::parseCpuFrequencyUsage(std::string str)
         }
     }
     str.erase(str.begin(), str.begin() + found);
-    this->currFreqUsage_.push_back(stod(str));
+    this->currFreqUsage_[coreNumber++] = stod(str);
+    if (coreNumber > this->hwCoresNum_) {
+        coreNumber = 0;
+    }
 }
