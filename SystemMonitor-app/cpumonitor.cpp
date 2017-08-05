@@ -26,35 +26,29 @@ void CpuMonitor::hwInfoGet()
     struct cpu_raw_data_t raw;
     struct cpu_id_t data;
 
-    try {     
-        if (!cpuid_present())
-            throw "Your CPU doesn't support CPUID!";
+    if (!cpuid_present())
+        throw "Your CPU doesn't support CPUID!";
 
-        if (cpuid_get_raw_data(&raw) < 0)
-            throw "Can't get the CPUID raw data";
+    if (cpuid_get_raw_data(&raw) < 0)
+        throw "Can't get the CPUID raw data";
 
-        if (cpu_identify(&raw, &data) < 0)
-            throw "CPU identification failed";
+    if (cpu_identify(&raw, &data) < 0)
+        throw "CPU identification failed";
 
 #if __x86_64__
-        this->arch_        = "x86-64" ;
+    this->arch_         = "x86-64" ;
 #else
-        this->arch_        = "x86" ;
+    this->arch_         = "x86" ;
 #endif
-        this->vendor_      = data.vendor_str;
-        this->codeName_    = data.cpu_codename;
-        this->brandName_   = data.brand_str;
-        this->l1cache_     = data.l1_data_cache;
-        this->l2cache_     = data.l2_cache;
-        this->hwCoresNum_  = data.num_cores;
-        this->logcoresNum_ = data.num_logical_cpus;
-
-        this->minFrequency_ = 0;
-        this->maxFrequency_ = readCpuFrequencyMax();
-    } catch (std::string err) {
-        std::cerr << err << std::endl;
-        exit(1); // TODO
-    }
+    this->vendor_       = data.vendor_str;
+    this->codeName_     = data.cpu_codename;
+    this->brandName_    = data.brand_str;
+    this->l1cache_      = data.l1_data_cache;
+    this->l2cache_      = data.l2_cache;
+    this->hwCoresNum_   = data.num_cores;
+    this->logcoresNum_  = data.num_logical_cpus;
+    this->minFrequency_ = 0;
+    this->maxFrequency_ = readCpuFrequencyMax();
 }
 
 void CpuMonitor::hwInfoShow()
@@ -87,32 +81,38 @@ void CpuMonitor::hwUsageShow()
     // Calculate two new data points:
     double timePoint = time.elapsed()/1000.0;
 
-    if (timePoint - lastTimePoint > 0.100) // Every 100 ms
+    if (timePoint - lastTimePoint > 0.500)
     {
         this->readCpuFrequencyUsage();
         for (auto i = 0; i < this->hwCoresNum_; ++i) {
-            this->userInterface_->CpuUsageGraph->graph(i)->addData(timePoint, this->currFreqUsage_[i]);
+            this->userInterface_->CpuUsageGraph->graph(i)->addData(timePoint, this->cpuUsage_[i]);
         }
         lastTimePoint = timePoint;
-    }
 
-    this->userInterface_->CpuUsageGraph->xAxis->setRange(timePoint, 8, Qt::AlignRight);
+    }
+    this->userInterface_->CpuUsageGraph->xAxis->setRange(timePoint, 40, Qt::AlignRight);
     this->userInterface_->CpuUsageGraph->replot();
 }
 
 void CpuMonitor::createGraph()
 {
-    auto minFrequency = 0;
-    auto maxFrequency = this->maxFrequency_ + 1000;
+    //auto minFrequency = 0;
+    //auto maxFrequency = this->maxFrequency_ + 1000;
 
     this->userInterface_->CpuUsageGraph->axisRect()->setupFullAxesBox();
-    this->userInterface_->CpuUsageGraph->yAxis->setRange(minFrequency, maxFrequency);
-    this->userInterface_->CpuUsageGraph->yAxis->setLabel("Frequency, Mhz");
+    this->userInterface_->CpuUsageGraph->yAxis->setRange(0.0, 100.0);
+    this->userInterface_->CpuUsageGraph->yAxis->setLabel("CPU Usage, %");
     this->userInterface_->CpuUsageGraph->xAxis->setLabel("Time, sec");
 
     // TODO
     for (auto i = 0; i != this->hwCoresNum_; ++i) {
-        this->currFreqUsage_.push_back(0.0);
+        this->cpuUsage_.push_back(0.0);
+        cpuUsageStat a;
+        a.usage[0] = 0.0;
+        a.usage[1] = 0.0;
+        a.usage[2] = 0.0;
+        a.usage[3] = 0.0;
+        this->statCpuUsage_.push_back(a);
         this->userInterface_->CpuUsageGraph->addGraph();
         switch (i)
         {
@@ -127,6 +127,8 @@ void CpuMonitor::createGraph()
             default: this->userInterface_->CpuUsageGraph->graph(i)->setPen(QPen(QColor(0, 0, 0))); break;
         }
     }
+
+    this->readCpuFrequencyUsage();
 }
 
 void CpuMonitor::connectSignalSlot()
@@ -140,16 +142,18 @@ void CpuMonitor::connectSignalSlot()
 
 void CpuMonitor::readCpuFrequencyUsage()
 {
-    std::ifstream sysFile("/proc/cpuinfo", std::ios::in);
-    if (sysFile.is_open()) {
-        std::string line;
-        while(getline(sysFile, line)) {
-            this->parseCpuFrequencyUsage(line);
-        }
-        sysFile.close();
-    } else {
-        throw "Can't read proc cpu";
+    std::ifstream cpuInfoFile("/proc/stat", std::ios::in);
+    if (!cpuInfoFile.is_open())
+        throw "Can't read proc stat";
+
+    std::string line;
+    getline(cpuInfoFile, line);
+    for (auto i = 0; i < this->hwCoresNum_; ++i) {
+        getline(cpuInfoFile, line);
+        this->parseCpuFrequencyUsage(line, i);
     }
+
+    cpuInfoFile.close();
 }
 
 uint32_t CpuMonitor::readCpuFrequencyMax()
@@ -165,27 +169,26 @@ uint32_t CpuMonitor::readCpuFrequencyMax()
     return maxFrequency / 1000;
 }
 
-void CpuMonitor::parseCpuFrequencyUsage(std::string& str)
+void CpuMonitor::parseCpuFrequencyUsage(std::string& str, int coreNumber)
 {
-    static auto coreNumber = 0;
+    long double a[4], b[4];
+    sscanf(str.c_str(),"%*s %Lf %Lf %Lf %Lf", &b[0], &b[1], &b[2], &b[3]);
 
-    std::size_t found = str.find("MHz");
-    if (found == std::string::npos)
-        return;
+    a[0] = this->statCpuUsage_[coreNumber].usage[0];
+    a[1] = this->statCpuUsage_[coreNumber].usage[1];
+    a[2] = this->statCpuUsage_[coreNumber].usage[2];
+    a[3] = this->statCpuUsage_[coreNumber].usage[3];
 
-    found = str.find(":");
-    if (found == std::string::npos)
-        return;
+    long double loadavg = ((b[0]+b[1]+b[2]) - (a[0]+a[1]+a[2])) /
+            ((b[0]+b[1]+b[2]+b[3]) - (a[0]+a[1]+a[2]+a[3]));
 
-    for (auto i = found + 1; i < str.size(); ++i) {
-        if (str[i] != ' ') {
-            found = i;
-            break;
-        }
-    }
-    str.erase(str.begin(), str.begin() + found);
-    this->currFreqUsage_[coreNumber++] = stod(str);
-    if (coreNumber > this->hwCoresNum_) {
-        coreNumber = 0;
-    }
+    this->statCpuUsage_[coreNumber].usage[0] = b[0];
+    this->statCpuUsage_[coreNumber].usage[1] = b[1];
+    this->statCpuUsage_[coreNumber].usage[2] = b[2];
+    this->statCpuUsage_[coreNumber].usage[3] = b[3];
+
+    //printf("The current CPU utilization is 1: %Lf\n", loadavg);
+
+    this->cpuUsage_[coreNumber] = loadavg * 100.0;
+
 }

@@ -6,6 +6,11 @@
 #include "ui_mainwindow.h"
 
 #include <string>
+#include <fstream>
+
+typedef struct {
+   long double usage[4];
+} cpuUsageStat;
 
 class CpuMonitor : public AbstractSystemMonitor, QObject
 {
@@ -22,14 +27,15 @@ class CpuMonitor : public AbstractSystemMonitor, QObject
         QString codeName_;
         QString brandName_;
 
-        std::vector<double> currFreqUsage_;
+        std::vector<cpuUsageStat> statCpuUsage_;
+        std::vector<long double> cpuUsage_;
 
         Ui::MainWindow* userInterface_;
 
         void createGraph();
         void connectSignalSlot();
 
-        void parseCpuFrequencyUsage(std::string& str);
+        void parseCpuFrequencyUsage(std::string& str, int coreNumber);
         void readCpuFrequencyUsage();
         uint32_t readCpuFrequencyMax();
 

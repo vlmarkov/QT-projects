@@ -27,6 +27,8 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui
 
+QMAKE_CXXFLAGS += -O3
+
 CONFIG += c++11 -pthread
 
 INCLUDEPATH += libs
