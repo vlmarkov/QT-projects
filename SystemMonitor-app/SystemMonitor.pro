@@ -28,5 +28,17 @@ FORMS    += mainwindow.ui
 
 CONFIG += c++11 -pthread
 
-LIBS += -L/libs/cpuid -lcpuid
 INCLUDEPATH += libs
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/libs/cpuid/release/ -lcpuid
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/libs/cpuid/debug/ -lcpuid
+else:unix: LIBS += -L$$PWD/libs/cpuid/ -lcpuid
+
+INCLUDEPATH += $$PWD/libs/cpuid
+DEPENDPATH += $$PWD/libs/cpuid
+
+win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/libs/cpuid/release/libcpuid.a
+else:win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/libs/cpuid/debug/libcpuid.a
+else:win32:!win32-g++:CONFIG(release, debug|release): PRE_TARGETDEPS += $$PWD/libs/cpuid/release/cpuid.lib
+else:win32:!win32-g++:CONFIG(debug, debug|release): PRE_TARGETDEPS += $$PWD/libs/cpuid/debug/cpuid.lib
+else:unix: PRE_TARGETDEPS += $$PWD/libs/cpuid/libcpuid.a
