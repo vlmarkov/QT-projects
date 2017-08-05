@@ -7,17 +7,23 @@
 
 #include <string>
 
-class CpuMonitor : public AbstractSystemMonitor
+class CpuMonitor : public AbstractSystemMonitor, QObject
 {
     private:
-        std::string cpuCores_;
-        std::string modelName_;
-        std::string vendorId_;
-        std::string flags_;
-        std::vector<std::string> cpuFrequency_;
+        int32_t l1cache_;
+        int32_t l2cache_;
+        int32_t hwCoresNum_;
+        int32_t logcoresNum_;
 
-        void hwInfoAsign(std::string line, int lnNum);
-        Ui::MainWindow* ui_;
+        QString arch_;
+        QString vendor_;
+        QString codeName_;
+        QString brandName_;
+
+        Ui::MainWindow* userInterface_;
+
+        void createGraph();
+        void connectSignalSlot();
 
     public:
         CpuMonitor(Ui::MainWindow* ui);
@@ -27,6 +33,8 @@ class CpuMonitor : public AbstractSystemMonitor
         void hwInfoShow();
         void hwUsageGather(bool activate);
         void hwUsageShow();
+
+    public slots:
         void hwUsageShowRealTime();
 };
 

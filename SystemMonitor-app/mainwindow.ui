@@ -18,7 +18,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>0</y>
+      <y>10</y>
       <width>711</width>
       <height>541</height>
      </rect>
@@ -55,22 +55,6 @@
        <string>Vendor</string>
       </property>
      </widget>
-     <widget class="QLabel" name="Model_label">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>50</y>
-        <width>91</width>
-        <height>17</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::Box</enum>
-      </property>
-      <property name="text">
-       <string>Model</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="Arch_label">
       <property name="geometry">
        <rect>
@@ -87,46 +71,11 @@
        <string>Architecture</string>
       </property>
      </widget>
-     <widget class="QLabel" name="Cores_label">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>110</y>
-        <width>91</width>
-        <height>17</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::Box</enum>
-      </property>
-      <property name="text">
-       <string>Cores</string>
-      </property>
-     </widget>
      <widget class="QLabel" name="Vendor_txt">
       <property name="geometry">
        <rect>
         <x>120</x>
         <y>20</y>
-        <width>311</width>
-        <height>16</height>
-       </rect>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::Box</enum>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="scaledContents">
-       <bool>false</bool>
-      </property>
-     </widget>
-     <widget class="QLabel" name="Model_txt">
-      <property name="geometry">
-       <rect>
-        <x>120</x>
-        <y>50</y>
         <width>311</width>
         <height>16</height>
        </rect>
@@ -160,11 +109,21 @@
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QLabel" name="Cores_txt">
+     <widget class="QCustomPlot" name="CpuUsageGraph" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>160</y>
+        <width>411</width>
+        <height>331</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="Model_txt">
       <property name="geometry">
        <rect>
         <x>120</x>
-        <y>110</y>
+        <y>40</y>
         <width>311</width>
         <height>16</height>
        </rect>
@@ -179,14 +138,195 @@
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QCustomPlot" name="widget" native="true">
+     <widget class="QLabel" name="Model_label">
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>140</y>
-        <width>421</width>
-        <height>271</height>
+        <y>40</y>
+        <width>91</width>
+        <height>17</height>
        </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string>Model</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="Brand_label">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>60</y>
+        <width>91</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string>Brand</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="Brand_txt">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>60</y>
+        <width>311</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="scaledContents">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="L1cache_txt">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>110</y>
+        <width>91</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="scaledContents">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="L1cache_label">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>110</y>
+        <width>91</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string>L1 cache</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="L2cache_label">
+      <property name="geometry">
+       <rect>
+        <x>240</x>
+        <y>110</y>
+        <width>91</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string>L2 cache</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="L2cache_txt">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>110</y>
+        <width>91</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="scaledContents">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="LogCores_label">
+      <property name="geometry">
+       <rect>
+        <x>240</x>
+        <y>130</y>
+        <width>91</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string>Log. cores</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="HwCores_txt">
+      <property name="geometry">
+       <rect>
+        <x>120</x>
+        <y>130</y>
+        <width>91</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="scaledContents">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="LogCores_txt">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>130</y>
+        <width>91</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="scaledContents">
+       <bool>false</bool>
+      </property>
+     </widget>
+     <widget class="QLabel" name="HwCores_label">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>130</y>
+        <width>91</width>
+        <height>17</height>
+       </rect>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="text">
+       <string>Cores</string>
       </property>
      </widget>
     </widget>
