@@ -87,7 +87,7 @@ void CpuMonitor::hwUsageShow()
     double key = time.elapsed()/1000.0;
     static double lastPointKey = 0;
 
-    if (key-lastPointKey > 0.002) // Every 2 ms
+    if (key-lastPointKey > 0.2) // Every 200 ms
     {
         this->readCpuFrequencyUsage("/proc/cpuinfo");
         for (auto i = 0; i < this->hwCoresNum_; ++i) {
@@ -156,7 +156,7 @@ void CpuMonitor::readCpuFrequencyUsage(const std::string sysPath)
         }
     } else {
         getline(sysFile, line);
-        this->maxFrequency_ = stoi(line);
+        this->maxFrequency_ = stoi(line) / 1000;
     }
     sysFile.close();
 }
