@@ -109,16 +109,6 @@
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QCustomPlot" name="CpuUsageGraph" native="true">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>160</y>
-        <width>411</width>
-        <height>331</height>
-       </rect>
-      </property>
-     </widget>
      <widget class="QLabel" name="Model_txt">
       <property name="geometry">
        <rect>
@@ -329,6 +319,16 @@
        <string>Cores</string>
       </property>
      </widget>
+     <widget class="QCustomPlot" name="CpuUsageGraph" native="true">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>160</y>
+        <width>411</width>
+        <height>331</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="RamTab">
      <attribute name="title">
@@ -377,7 +377,7 @@
   <customwidget>
    <class>QCustomPlot</class>
    <extends>QWidget</extends>
-   <header>qcustomplot.h</header>
+   <header location="global">qcustomplot/qcustomplot.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
