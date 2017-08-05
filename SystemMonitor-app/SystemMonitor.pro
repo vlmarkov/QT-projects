@@ -22,7 +22,8 @@ HEADERS  += mainwindow.h \
             libs/qcustomplot/qcustomplot.h \
             libs/cpuid/libcpuid_constants.h \
             libs/cpuid/libcpuid_types.h \
-            libs/cpuid/libcpuid.h
+            libs/cpuid/libcpuid.h \
+            cpumonitor.h
 
 FORMS    += mainwindow.ui
 

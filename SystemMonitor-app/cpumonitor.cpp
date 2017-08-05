@@ -52,6 +52,9 @@ void CpuMonitor::hwInfoGet()
         std::cerr << err << std::endl;
         exit(1); // TODO
     }
+
+    //system("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_min_freq >> cpuMhz.data");
+    //system("cat /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq >> cpuMhz.data");
 }
 
 void CpuMonitor::hwInfoShow()
@@ -123,13 +126,48 @@ void CpuMonitor::hwUsageShow()
 
     if (key-lastPointKey > 0.002) // Every 2 ms
     {
-        //this->hwInfoGet();
+        this->readCurrCpuFreq();
         for (auto i = 0; i < this->hwCoresNum_; ++i) {
-            this->userInterface_->CpuUsageGraph->graph(i)->addData(key, double(1000 * (i + 1)));
+            this->userInterface_->CpuUsageGraph->graph(i)->addData(key,
+                this->currFreqUsage_[i]);
         }
         lastPointKey = key;
     }
 
     this->userInterface_->CpuUsageGraph->xAxis->setRange(key, 8, Qt::AlignRight);
     this->userInterface_->CpuUsageGraph->replot();
+
+    this->currFreqUsage_.clear();
+}
+
+void CpuMonitor::readCurrCpuFreq()
+{
+    system("cat /proc/cpuinfo | grep MHz >> cpuMhz.data");
+
+    std::ifstream hwCpuInfoFile("cpuMhz.data", std::ios::in);
+    if (hwCpuInfoFile.is_open()) {
+        for (auto i = 0; i < this->hwCoresNum_; i++) {
+            std::string line;
+            getline(hwCpuInfoFile, line);
+            this->parseFreqString(line);
+        }
+    }
+    system("rm -f cpuMhz.data");
+}
+
+void CpuMonitor::parseFreqString(std::string line)
+{
+     std::size_t found = line.find(":");
+     if (found == std::string::npos)
+         return;
+
+     for (int i = found + 1; i < line.size(); ++i) {
+         if (line[i] != ' ') {
+             found = i;
+             break;
+         }
+     }
+
+    line.erase(line.begin(), line.begin() + found);
+    this->currFreqUsage_.push_back(stod(line));
 }

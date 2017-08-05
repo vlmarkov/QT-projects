@@ -20,10 +20,15 @@ class CpuMonitor : public AbstractSystemMonitor, QObject
         QString codeName_;
         QString brandName_;
 
+        std::vector<double> currFreqUsage_;
+
         Ui::MainWindow* userInterface_;
 
         void createGraph();
         void connectSignalSlot();
+
+        void readCurrCpuFreq();
+        void parseFreqString(std::string line);
 
     public:
         CpuMonitor(Ui::MainWindow* ui);
