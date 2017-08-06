@@ -49,6 +49,9 @@ void CpuMonitor::hwInfoGet()
     this->logcoresNum_  = data.num_logical_cpus;
     this->minFrequency_ = 0;
     this->maxFrequency_ = readCpuFrequencyMax();
+
+    // Create cpu-statistic-usage vector
+    this->cpuUsage_ = std::vector<long double> (this->hwCoresNum_);;
 }
 
 void CpuMonitor::hwInfoShow()
@@ -71,6 +74,9 @@ void CpuMonitor::hwUsageGather(bool activate)
 
     this->createGraph();
     this->connectSignalSlot();
+
+    // Warm-up cpu statistic
+    this->readStatsCpu();
 }
 
 void CpuMonitor::hwUsageShow()
@@ -83,7 +89,7 @@ void CpuMonitor::hwUsageShow()
 
     if (timePoint - lastTimePoint > 0.500)
     {
-        this->readCpuFrequencyUsage();
+        this->readStatsCpu();
         for (auto i = 0; i < this->hwCoresNum_; ++i) {
             this->userInterface_->CpuUsageGraph->graph(i)->addData(timePoint, this->cpuUsage_[i]);
         }
@@ -106,13 +112,6 @@ void CpuMonitor::createGraph()
 
     // TODO
     for (auto i = 0; i != this->hwCoresNum_; ++i) {
-        this->cpuUsage_.push_back(0.0);
-        cpuUsageStat a;
-        a.usage[0] = 0.0;
-        a.usage[1] = 0.0;
-        a.usage[2] = 0.0;
-        a.usage[3] = 0.0;
-        this->statCpuUsage_.push_back(a);
         this->userInterface_->CpuUsageGraph->addGraph();
         switch (i)
         {
@@ -127,8 +126,6 @@ void CpuMonitor::createGraph()
             default: this->userInterface_->CpuUsageGraph->graph(i)->setPen(QPen(QColor(0, 0, 0))); break;
         }
     }
-
-    this->readCpuFrequencyUsage();
 }
 
 void CpuMonitor::connectSignalSlot()
@@ -138,22 +135,6 @@ void CpuMonitor::connectSignalSlot()
 
     QObject::connect(this->userInterface_->CpuUsageGraph->yAxis, SIGNAL(rangeChanged(QCPRange)),
             this->userInterface_->CpuUsageGraph->yAxis2, SLOT(setRange(QCPRange)));
-}
-
-void CpuMonitor::readCpuFrequencyUsage()
-{
-    std::ifstream cpuInfoFile("/proc/stat", std::ios::in);
-    if (!cpuInfoFile.is_open())
-        throw "Can't read proc stat";
-
-    std::string line;
-    getline(cpuInfoFile, line);
-    for (auto i = 0; i < this->hwCoresNum_; ++i) {
-        getline(cpuInfoFile, line);
-        this->parseCpuFrequencyUsage(line, i);
-    }
-
-    cpuInfoFile.close();
 }
 
 uint32_t CpuMonitor::readCpuFrequencyMax()
@@ -169,26 +150,85 @@ uint32_t CpuMonitor::readCpuFrequencyMax()
     return maxFrequency / 1000;
 }
 
-void CpuMonitor::parseCpuFrequencyUsage(std::string& str, int coreNumber)
+size_t CpuMonitor::getIdleTime(const CPUData & e)
 {
-    long double a[4], b[4];
-    sscanf(str.c_str(),"%*s %Lf %Lf %Lf %Lf", &b[0], &b[1], &b[2], &b[3]);
+    return	e.times[S_IDLE] + e.times[S_IOWAIT];
+}
 
-    a[0] = this->statCpuUsage_[coreNumber].usage[0];
-    a[1] = this->statCpuUsage_[coreNumber].usage[1];
-    a[2] = this->statCpuUsage_[coreNumber].usage[2];
-    a[3] = this->statCpuUsage_[coreNumber].usage[3];
+size_t CpuMonitor::getActiveTime(const CPUData & e)
+{
+    return	e.times[S_USER]    + e.times[S_NICE]  +
+            e.times[S_SYSTEM]  + e.times[S_IRQ]   +
+            e.times[S_SOFTIRQ] + e.times[S_STEAL] +
+            e.times[S_GUEST]   + e.times[S_GUEST_NICE];
+}
 
-    long double loadavg = ((b[0]+b[1]+b[2]) - (a[0]+a[1]+a[2])) /
-            ((b[0]+b[1]+b[2]+b[3]) - (a[0]+a[1]+a[2]+a[3]));
+void CpuMonitor::readStatsCpu()
+{
+    std::vector<CPUData> entries;
 
-    this->statCpuUsage_[coreNumber].usage[0] = b[0];
-    this->statCpuUsage_[coreNumber].usage[1] = b[1];
-    this->statCpuUsage_[coreNumber].usage[2] = b[2];
-    this->statCpuUsage_[coreNumber].usage[3] = b[3];
+    std::ifstream fileStat("/proc/stat");
+    if (fileStat.is_open()) {
+        std::string line;
 
-    //printf("The current CPU utilization is 1: %Lf\n", loadavg);
+        const std::string STR_CPU("cpu");
+        const std::size_t LEN_STR_CPU = STR_CPU.size();
+        const std::string STR_TOT("tot");
 
-    this->cpuUsage_[coreNumber] = loadavg * 100.0;
+        while (std::getline(fileStat, line)) {
+            // cpu stats line found
+            if (!line.compare(0, LEN_STR_CPU, STR_CPU)) {
+                std::istringstream ss(line);
 
+                // store entry
+                entries.emplace_back(CPUData());
+                CPUData & entry = entries.back();
+
+                // read cpu label
+                ss >> entry.cpu;
+
+                // remove "cpu" from the label when it's a processor number
+                if (entry.cpu.size() > LEN_STR_CPU) {
+                    entry.cpu.erase(0, LEN_STR_CPU);
+                }
+                // replace "cpu" with "tot" when it's total values
+                else {
+                    entry.cpu = STR_TOT;
+                }
+
+                // read times
+                for (int i = 0; i < NUM_CPU_STATES; ++i)
+                    ss >> entry.times[i];
+            }
+        }
+
+        this->PrintStats(this->entries1, entries);
+        this->entries1 = entries;
+    } else {
+        throw "Can't read /proc/stat/";
+    }
+}
+
+void CpuMonitor::PrintStats(const std::vector<CPUData> & entries1,
+                            const std::vector<CPUData> & entries2)
+{
+    const size_t NUM_ENTRIES = entries1.size();
+
+    for(size_t i = 1; i < NUM_ENTRIES; ++i)
+    {
+        const CPUData & e1 = entries1[i];
+        const CPUData & e2 = entries2[i];
+
+        const float ACTIVE_TIME	= static_cast<float>
+                (this->getActiveTime(e2) - this->getActiveTime(e1));
+
+        const float IDLE_TIME	= static_cast<float>
+                (this->getIdleTime(e2) - this->getIdleTime(e1));
+
+        const float TOTAL_TIME	= ACTIVE_TIME + IDLE_TIME;
+
+        //std::cout << (100.f * ACTIVE_TIME / TOTAL_TIME) << "%";
+
+        this->cpuUsage_[i - 1] = (100.f * ACTIVE_TIME / TOTAL_TIME);
+    }
 }

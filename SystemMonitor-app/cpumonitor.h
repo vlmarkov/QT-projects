@@ -5,12 +5,33 @@
 
 #include "ui_mainwindow.h"
 
-#include <string>
+#include <chrono>
 #include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <thread>
+#include <vector>
+
+static const int NUM_CPU_STATES = 10;
+
+enum CPUStates {
+    S_USER = 0,
+    S_NICE,
+    S_SYSTEM,
+    S_IDLE,
+    S_IOWAIT,
+    S_IRQ,
+    S_SOFTIRQ,
+    S_STEAL,
+    S_GUEST,
+    S_GUEST_NICE
+};
 
 typedef struct {
-   long double usage[4];
-} cpuUsageStat;
+    std::string cpu;
+    size_t times[NUM_CPU_STATES];
+} CPUData;
 
 class CpuMonitor : public AbstractSystemMonitor, QObject
 {
@@ -27,7 +48,6 @@ class CpuMonitor : public AbstractSystemMonitor, QObject
         QString codeName_;
         QString brandName_;
 
-        std::vector<cpuUsageStat> statCpuUsage_;
         std::vector<long double> cpuUsage_;
 
         Ui::MainWindow* userInterface_;
@@ -38,6 +58,14 @@ class CpuMonitor : public AbstractSystemMonitor, QObject
         void parseCpuFrequencyUsage(std::string& str, int coreNumber);
         void readCpuFrequencyUsage();
         uint32_t readCpuFrequencyMax();
+
+        std::vector<CPUData> entries1;
+
+        void readStatsCpu();
+        size_t getIdleTime(const CPUData & e);
+        size_t getActiveTime(const CPUData & e);
+        void PrintStats(const std::vector<CPUData> & entries1,
+                        const std::vector<CPUData> & entries2);
 
     public:
         CpuMonitor(Ui::MainWindow* ui);
