@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef _MAIN_WINDOW_H_
+#define _MAIN_WINDOW_H_
 
 #include <QMainWindow>
 
@@ -24,6 +24,7 @@ class MainWindow : public QMainWindow
 
         AbstractSystemMonitor* cpuMonitor_;
         AbstractSystemMonitor* ramMonitor_;
+        AbstractSystemMonitor* hddMonitor_;
 
         void createTimer();
         void startTimer();
@@ -33,4 +34,4 @@ class MainWindow : public QMainWindow
         void realtimeDataSlot();
 };
 
-#endif // MAINWINDOW_H
+#endif /* _MAIN_WINDOW_H_ */

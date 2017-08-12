@@ -2,11 +2,6 @@
 
 #include <sys/sysinfo.h>
 
-#define Kib (1024)
-#define Mib (Kib * 1024)
-#define Gib (Mib * 1024)
-
-
 RamMonitor::RamMonitor(Ui::MainWindow* ui)
 {
     this->userInterface_ = ui;

@@ -3,6 +3,7 @@
 
 #include "cpumonitor.h"
 #include "rammonitor.h"
+#include "hddmonitor.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -12,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     this->cpuMonitor_ = new CpuMonitor(this->ui_);
     this->ramMonitor_ = new RamMonitor(this->ui_);
+    this->hddMonitor_ = new HddMonitor(this->ui_);
 
     this->cpuMonitor_->hwInfoGet();
     this->cpuMonitor_->hwInfoShow();
@@ -20,6 +22,10 @@ MainWindow::MainWindow(QWidget *parent) :
     this->ramMonitor_->hwInfoGet();
     this->ramMonitor_->hwInfoShow();
     //this->ramMonitor_->hwUsageGather(true);
+
+    this->hddMonitor_->hwInfoGet();
+    this->hddMonitor_->hwInfoShow();
+    //this->hddMonitor_->hwUsageGather(true);
 
     this->createTimer();
     this->connectTimerSlot();
@@ -30,6 +36,7 @@ MainWindow::~MainWindow()
 {
     delete cpuMonitor_;
     delete ramMonitor_;
+    delete hddMonitor_;
 
     delete timer_;
     delete ui_;
