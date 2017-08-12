@@ -15,7 +15,8 @@ TEMPLATE = app
 SOURCES += main.cpp\
            mainwindow.cpp \
            cpumonitor.cpp \
-           libs/qcustomplot/qcustomplot.cpp
+           libs/qcustomplot/qcustomplot.cpp \
+    rammonitor.cpp
 
 HEADERS  += mainwindow.h \
             abstractsystemmonitor.h \
@@ -23,7 +24,8 @@ HEADERS  += mainwindow.h \
             libs/cpuid/libcpuid_constants.h \
             libs/cpuid/libcpuid_types.h \
             libs/cpuid/libcpuid.h \
-            cpumonitor.h
+            cpumonitor.h \
+    rammonitor.h
 
 FORMS    += mainwindow.ui
 

@@ -19,9 +19,11 @@ class MainWindow : public QMainWindow
         ~MainWindow();
 
     private:
-        AbstractSystemMonitor* cpuMonitor;
-        Ui::MainWindow*        ui;
+        Ui::MainWindow*        ui_;
         QTimer*                timer_;
+
+        AbstractSystemMonitor* cpuMonitor_;
+        AbstractSystemMonitor* ramMonitor_;
 
         void createTimer();
         void startTimer();

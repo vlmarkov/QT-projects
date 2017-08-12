@@ -1,5 +1,5 @@
-#ifndef _CPU_MONITOR_HPP_
-#define _CPU_MONITOR_HPP_
+#ifndef _CPU_MONITOR_H_
+#define _CPU_MONITOR_H_
 
 #include "abstractsystemmonitor.h"
 

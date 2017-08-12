@@ -2,22 +2,37 @@
 #include "ui_mainwindow.h"
 
 #include "cpumonitor.h"
+#include "rammonitor.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui_(new Ui::MainWindow)
 {
-    ui->setupUi(this);
+    this->ui_->setupUi(this);
 
-    this->cpuMonitor = new CpuMonitor(ui);
+    this->cpuMonitor_ = new CpuMonitor(this->ui_);
+    this->ramMonitor_ = new RamMonitor(this->ui_);
 
-    this->cpuMonitor->hwInfoGet();
-    this->cpuMonitor->hwInfoShow();
-    this->cpuMonitor->hwUsageGather(true);
+    this->cpuMonitor_->hwInfoGet();
+    this->cpuMonitor_->hwInfoShow();
+    this->cpuMonitor_->hwUsageGather(true);
+
+    this->ramMonitor_->hwInfoGet();
+    this->ramMonitor_->hwInfoShow();
+    //this->ramMonitor_->hwUsageGather(true);
 
     this->createTimer();
     this->connectTimerSlot();
     this->startTimer();
+}
+
+MainWindow::~MainWindow()
+{
+    delete cpuMonitor_;
+    delete ramMonitor_;
+
+    delete timer_;
+    delete ui_;
 }
 
 void MainWindow::createTimer()
@@ -37,12 +52,5 @@ void MainWindow::connectTimerSlot()
 
 void MainWindow::realtimeDataSlot()
 {
-    this->cpuMonitor->hwUsageShow();
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
-    delete cpuMonitor;
-    delete timer_;
+    this->cpuMonitor_->hwUsageShow();
 }
