@@ -33,7 +33,7 @@ typedef struct {
     size_t times[NUM_CPU_STATES];
 } CPUData;
 
-class CpuMonitor : public AbstractSystemMonitor, QObject
+class CpuMonitor : public AbstractSystemMonitor
 {
     private:
         int32_t l1cache_;

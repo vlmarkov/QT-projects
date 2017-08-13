@@ -5,7 +5,7 @@
 #include "ui_mainwindow.h"
 
 
-class HddMonitor : public AbstractSystemMonitor, QObject
+class HddMonitor : public AbstractSystemMonitor
 {
     public:
         HddMonitor(Ui::MainWindow* ui);

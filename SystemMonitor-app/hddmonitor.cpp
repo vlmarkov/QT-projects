@@ -2,7 +2,6 @@
 
 #include <sys/statvfs.h>
 
-#include <iostream>
 
 HddMonitor::HddMonitor(Ui::MainWindow* ui)
 {

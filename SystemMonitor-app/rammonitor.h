@@ -5,7 +5,7 @@
 #include "ui_mainwindow.h"
 
 
-class RamMonitor : public AbstractSystemMonitor, QObject
+class RamMonitor : public AbstractSystemMonitor
 {
     public:
         RamMonitor(Ui::MainWindow* ui);

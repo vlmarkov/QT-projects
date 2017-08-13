@@ -17,7 +17,8 @@ SOURCES += main.cpp\
            cpumonitor.cpp \
            libs/qcustomplot/qcustomplot.cpp \
     rammonitor.cpp \
-    hddmonitor.cpp
+    hddmonitor.cpp \
+    gpumonitor.cpp
 
 HEADERS  += mainwindow.h \
             abstractsystemmonitor.h \
@@ -27,7 +28,8 @@ HEADERS  += mainwindow.h \
             libs/cpuid/libcpuid.h \
             cpumonitor.h \
     rammonitor.h \
-    hddmonitor.h
+    hddmonitor.h \
+    gpumonitor.h
 
 FORMS    += mainwindow.ui
 
