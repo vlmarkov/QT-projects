@@ -52,6 +52,9 @@ class CpuMonitor : public AbstractSystemMonitor
 
         Ui::MainWindow* userInterface_;
 
+        QCPTextElement *title;
+        QCPLayoutGrid *subLayout;
+
         void createGraph();
         void connectSignalSlot();
 

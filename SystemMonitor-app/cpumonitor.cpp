@@ -19,6 +19,8 @@ CpuMonitor::CpuMonitor(Ui::MainWindow* ui)
 CpuMonitor::~CpuMonitor()
 {
     // TODO
+    delete title;
+    delete subLayout;
 }
 
 void CpuMonitor::hwInfoGet()
@@ -102,30 +104,48 @@ void CpuMonitor::hwUsageShow()
 
 void CpuMonitor::createGraph()
 {
-    //auto minFrequency = 0;
-    //auto maxFrequency = this->maxFrequency_ + 1000;
+    auto *customPlot = this->userInterface_->CpuUsageGraph;
 
-    this->userInterface_->CpuUsageGraph->axisRect()->setupFullAxesBox();
-    this->userInterface_->CpuUsageGraph->yAxis->setRange(0.0, 100.0);
-    this->userInterface_->CpuUsageGraph->yAxis->setLabel("CPU Usage, %");
-    this->userInterface_->CpuUsageGraph->xAxis->setLabel("Time, sec");
+    customPlot->axisRect()->setupFullAxesBox();
+    customPlot->yAxis->setRange(0.0, 100.0);
+    customPlot->yAxis->setLabel("Usage, %");
+    customPlot->xAxis->setLabel("Time, sec");
 
-    // TODO
+    this->title = new QCPTextElement(customPlot);
+    this->subLayout = new QCPLayoutGrid;
+
+    title->setText("CPU Usage Graph");
+    title->setFont(QFont("sans", 12, QFont::Bold));
+
+    customPlot->plotLayout()->insertRow(0);
+    customPlot->legend->setVisible(true);
+
+    customPlot->plotLayout()->addElement(0, 0, title);
+    customPlot->plotLayout()->addElement(2, 0, subLayout);
+
     for (auto i = 0; i != this->hwCoresNum_; ++i) {
-        this->userInterface_->CpuUsageGraph->addGraph();
+        customPlot->addGraph();
+        customPlot->graph(i)->setName(QString(QString("core ") + QString::number(i)));
         switch (i)
         {
-            case 0: this->userInterface_->CpuUsageGraph->graph(i)->setPen(QPen(QColor(0, 0, 255))); break;
-            case 1: this->userInterface_->CpuUsageGraph->graph(i)->setPen(QPen(QColor(0, 255, 0))); break;
-            case 2: this->userInterface_->CpuUsageGraph->graph(i)->setPen(QPen(QColor(255, 0, 0))); break;
-            case 3: this->userInterface_->CpuUsageGraph->graph(i)->setPen(QPen(QColor(150, 0, 255))); break;
-            case 4: this->userInterface_->CpuUsageGraph->graph(i)->setPen(QPen(QColor(0, 150, 255))); break;
-            case 5: this->userInterface_->CpuUsageGraph->graph(i)->setPen(QPen(QColor(255, 0, 150))); break;
-            case 6: this->userInterface_->CpuUsageGraph->graph(i)->setPen(QPen(QColor(255, 200, 200))); break;
-            case 7: this->userInterface_->CpuUsageGraph->graph(i)->setPen(QPen(QColor(10, 250, 200))); break;
-            default: this->userInterface_->CpuUsageGraph->graph(i)->setPen(QPen(QColor(0, 0, 0))); break;
+            case 0:  customPlot->graph(i)->setPen(QPen(QColor(0, 0, 255))); break;
+            case 1:  customPlot->graph(i)->setPen(QPen(QColor(0, 255, 0))); break;
+            case 2:  customPlot->graph(i)->setPen(QPen(QColor(255, 0, 0))); break;
+            case 3:  customPlot->graph(i)->setPen(QPen(QColor(150, 0, 255))); break;
+            case 4:  customPlot->graph(i)->setPen(QPen(QColor(0, 150, 255))); break;
+            case 5:  customPlot->graph(i)->setPen(QPen(QColor(255, 0, 150))); break;
+            case 6:  customPlot->graph(i)->setPen(QPen(QColor(255, 200, 200))); break;
+            case 7:  customPlot->graph(i)->setPen(QPen(QColor(10, 250, 200))); break;
+            default: customPlot->graph(i)->setPen(QPen(QColor(0, 0, 0))); break;
         }
+
     }
+
+    this->subLayout->setMargins(QMargins(5, 0, 1, 5));
+    this->subLayout->addElement(0, 0, customPlot->legend);
+
+    customPlot->legend->setFillOrder(QCPLegend::foColumnsFirst);
+    customPlot->plotLayout()->setRowStretchFactor(2, 0.1);
 }
 
 void CpuMonitor::connectSignalSlot()

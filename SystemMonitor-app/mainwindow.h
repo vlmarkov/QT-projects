@@ -26,6 +26,7 @@ class MainWindow : public QMainWindow
         AbstractSystemMonitor* ramMonitor_;
         AbstractSystemMonitor* hddMonitor_;
         AbstractSystemMonitor* gpuMonitor_;
+        AbstractSystemMonitor* netMonitor_;
 
         void createTimer();
         void startTimer();

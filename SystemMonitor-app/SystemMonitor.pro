@@ -18,7 +18,8 @@ SOURCES += main.cpp\
            libs/qcustomplot/qcustomplot.cpp \
     rammonitor.cpp \
     hddmonitor.cpp \
-    gpumonitor.cpp
+    gpumonitor.cpp \
+    netmonitor.cpp
 
 HEADERS  += mainwindow.h \
             abstractsystemmonitor.h \
@@ -29,7 +30,8 @@ HEADERS  += mainwindow.h \
             cpumonitor.h \
     rammonitor.h \
     hddmonitor.h \
-    gpumonitor.h
+    gpumonitor.h \
+    netmonitor.h
 
 FORMS    += mainwindow.ui
 
