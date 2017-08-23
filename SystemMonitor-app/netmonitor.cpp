@@ -9,16 +9,24 @@
 #include <unistd.h>
 #include <linux/if_link.h>
 
+#include <algorithm>
+#include <vector>
 #include <iostream>
 
 NetMonitor::NetMonitor(Ui::MainWindow* ui)
 {
     this->userInterface_ = ui;
+
+    this->titleRx_       = new QCPTextElement(this->userInterface_->NetUsageGraphRx);
+    this->titleTx_       = new QCPTextElement(this->userInterface_->NetUsageGraphTx);
+
+    this->subLayoutRx_   = new QCPLayoutGrid;
+    this->subLayoutTx_   = new QCPLayoutGrid;
 }
 
 NetMonitor::~NetMonitor()
 {
-    delete this->titleRx_;
+    delete this->titleRx_;;
     delete this->subLayoutRx_;
     delete this->titleTx_;
     delete this->subLayoutTx_;
@@ -29,7 +37,7 @@ void NetMonitor::hwInfoGet()
     struct ifaddrs *ifaddr;
     struct ifaddrs *ifa;
 
-    int family, s, n;
+    int family, n;
 
     char host[NI_MAXHOST];
 
@@ -88,6 +96,7 @@ void NetMonitor::hwInfoShow()
 
     std::cout << this->NetUsage_.size() << std::endl;
     */
+    return;
 }
 
 void NetMonitor::hwUsageGather(bool activate)
@@ -95,8 +104,18 @@ void NetMonitor::hwUsageGather(bool activate)
     if (!activate)
         return;
 
-    this->createGraph();
-    this->connectSignalSlot();
+    this->createGraph(this->userInterface_->NetUsageGraphRx,
+                      QString("Network Resource Usage (download)"),
+                      this->titleRx_,
+                      this->subLayoutRx_);
+
+    this->createGraph(this->userInterface_->NetUsageGraphTx,
+                      QString("Network Resource Usage (upload)"),
+                      this->titleTx_,
+                      this->subLayoutTx_);
+
+    this->connectSignalSlot(this->userInterface_->NetUsageGraphRx);
+    this->connectSignalSlot(this->userInterface_->NetUsageGraphTx);
 }
 
 void NetMonitor::hwUsageShow()
@@ -130,130 +149,85 @@ void NetMonitor::hwUsageShow()
     }
 }
 
-void NetMonitor::createGraph()
+void NetMonitor::addGraphData(NetUsage     &object,
+                          QCustomPlot *customPlot,
+                          int          i)
 {
-    auto *customPlotRx = this->userInterface_->NetUsageGraphRx;
-    auto *customPlotTx = this->userInterface_->NetUsageGraphTx;
+    QString ifaceName;
 
-    customPlotRx->axisRect()->setupFullAxesBox();
-    customPlotRx->yAxis->setRange(0.0, 10000.0);
-    customPlotRx->yAxis->setLabel("Bandwidth, kib/sec");
-    customPlotRx->xAxis->setLabel("Time, sec");
+    ifaceName += object.ifName_;
+    ifaceName += QString(" (");
+    ifaceName += object.ipAddr_;
+    ifaceName += QString(")");
 
-    customPlotTx->axisRect()->setupFullAxesBox();
-    customPlotTx->yAxis->setRange(0.0, 10000.0);
-    customPlotTx->yAxis->setLabel("Bandwidth, kib/sec");
-    customPlotTx->xAxis->setLabel("Time, sec");
+    customPlot->addGraph();
+    customPlot->graph(i)->setName(ifaceName);
 
-    this->titleRx_     = new QCPTextElement(customPlotRx);
-    this->subLayoutRx_ = new QCPLayoutGrid;
-
-    this->titleTx_     = new QCPTextElement(customPlotTx);
-    this->subLayoutTx_ = new QCPLayoutGrid;
-
-    this->titleRx_->setText("Network Usage Graph (rx)");
-    this->titleRx_->setFont(QFont("sans", 12, QFont::Bold));
-
-    this->titleTx_->setText("Network Usage Graph (tx)");
-    this->titleTx_->setFont(QFont("sans", 12, QFont::Bold));
-
-    customPlotTx->plotLayout()->insertRow(0);
-    customPlotTx->legend->setVisible(true);
-
-    customPlotRx->plotLayout()->insertRow(0);
-    customPlotRx->legend->setVisible(true);
-
-    customPlotRx->plotLayout()->addElement(0, 0, this->titleRx_);
-    customPlotRx->plotLayout()->addElement(2, 0, this->subLayoutRx_);
-
-    customPlotTx->plotLayout()->addElement(0, 0, this->titleTx_);
-    customPlotTx->plotLayout()->addElement(2, 0, this->subLayoutTx_);
-
-    for (auto i = 0; i != this->NetUsage_.size(); ++i)
+    // TODO color generator
+    switch (i)
     {
-        customPlotTx->addGraph();
-        customPlotTx->graph(i)->setName(this->NetUsage_[i].ifName_);
-
-        customPlotRx->addGraph();
-        customPlotRx->graph(i)->setName(this->NetUsage_[i].ifName_);
-
-        switch (i)
-        {
-            case 0:
-                customPlotTx->graph(i)->setPen(QPen(QColor(0, 0, 255)));
-                customPlotRx->graph(i)->setPen(QPen(QColor(0, 0, 255)));
-                break;
-
-            case 1:
-                customPlotTx->graph(i)->setPen(QPen(QColor(0, 255, 0)));
-                customPlotRx->graph(i)->setPen(QPen(QColor(0, 255, 0)));
-                break;
-
-            case 2:
-                customPlotTx->graph(i)->setPen(QPen(QColor(255, 0, 0)));
-                customPlotRx->graph(i)->setPen(QPen(QColor(255, 0, 0)));
-                break;
-
-            case 3:
-                customPlotTx->graph(i)->setPen(QPen(QColor(150, 0, 255)));
-                customPlotRx->graph(i)->setPen(QPen(QColor(150, 0, 255)));
-                break;
-
-            case 4:
-                customPlotTx->graph(i)->setPen(QPen(QColor(0, 150, 255)));
-                customPlotRx->graph(i)->setPen(QPen(QColor(0, 150, 255)));
-                break;
-
-            case 5:
-                customPlotTx->graph(i)->setPen(QPen(QColor(255, 0, 150)));
-                customPlotRx->graph(i)->setPen(QPen(QColor(255, 0, 150)));
-                break;
-
-            case 6:
-                customPlotTx->graph(i)->setPen(QPen(QColor(255, 200, 200)));
-                customPlotRx->graph(i)->setPen(QPen(QColor(255, 200, 200)));
-                break;
-
-            case 7:
-                customPlotTx->graph(i)->setPen(QPen(QColor(10, 250, 200)));
-                customPlotRx->graph(i)->setPen(QPen(QColor(10, 250, 200)));
-                break;
-
-            default:
-                customPlotTx->graph(i)->setPen(QPen(QColor(0, 0, 0)));
-                customPlotRx->graph(i)->setPen(QPen(QColor(0, 0, 0)));
-                break;
-        }
-
+        case 0:  customPlot->graph(i)->setPen(QPen(QColor(0, 0, 255))); break;
+        case 1:  customPlot->graph(i)->setPen(QPen(QColor(0, 255, 0))); break;
+        case 2:  customPlot->graph(i)->setPen(QPen(QColor(255, 0, 0))); break;
+        case 3:  customPlot->graph(i)->setPen(QPen(QColor(150, 0, 255))); break;
+        case 4:  customPlot->graph(i)->setPen(QPen(QColor(0, 150, 255))); break;
+        case 5:  customPlot->graph(i)->setPen(QPen(QColor(255, 0, 150))); break;
+        case 6:  customPlot->graph(i)->setPen(QPen(QColor(255, 200, 200))); break;
+        case 7:  customPlot->graph(i)->setPen(QPen(QColor(10, 250, 200))); break;
+        default: customPlot->graph(i)->setPen(QPen(QColor(0, 0, 0))); break;
     }
-
-    this->subLayoutRx_->setMargins(QMargins(5, 0, 1, 5));
-    this->subLayoutRx_->addElement(0, 0, customPlotRx->legend);
-
-    this->subLayoutTx_->setMargins(QMargins(5, 0, 1, 5));
-    this->subLayoutTx_->addElement(0, 0, customPlotTx->legend);
-
-
-    customPlotRx->legend->setFillOrder(QCPLegend::foColumnsFirst);
-    customPlotRx->plotLayout()->setRowStretchFactor(2, 0.1);
-
-    customPlotTx->legend->setFillOrder(QCPLegend::foColumnsFirst);
-    customPlotTx->plotLayout()->setRowStretchFactor(2, 0.1);
 }
 
-void NetMonitor::connectSignalSlot()
+void NetMonitor::createGraph(QCustomPlot    *customPlot,
+                             QString         titleText,
+                             QCPTextElement *title,
+                             QCPLayoutGrid  *subLayout)
 {
-    QObject::connect(this->userInterface_->NetUsageGraphRx->xAxis, SIGNAL(rangeChanged(QCPRange)),
-            this->userInterface_->NetUsageGraphRx->xAxis2, SLOT(setRange(QCPRange)));
+    customPlot->axisRect()->setupFullAxesBox();
+    customPlot->yAxis->setRange(0.0, 10000.0);
+    customPlot->yAxis->setLabel("Bandwidth, kib/sec");
+    customPlot->xAxis->setLabel("Time, sec");
 
-    QObject::connect(this->userInterface_->NetUsageGraphRx->yAxis, SIGNAL(rangeChanged(QCPRange)),
-            this->userInterface_->NetUsageGraphRx->yAxis2, SLOT(setRange(QCPRange)));
+    title->setText(titleText);
+    title->setFont(QFont("sans", 12, QFont::Bold));
 
-    QObject::connect(this->userInterface_->NetUsageGraphTx->xAxis, SIGNAL(rangeChanged(QCPRange)),
-            this->userInterface_->NetUsageGraphTx->xAxis2, SLOT(setRange(QCPRange)));
+    customPlot->plotLayout()->insertRow(0);
+    customPlot->legend->setVisible(true);
 
-    QObject::connect(this->userInterface_->NetUsageGraphTx->yAxis, SIGNAL(rangeChanged(QCPRange)),
-            this->userInterface_->NetUsageGraphTx->yAxis2, SLOT(setRange(QCPRange)));
+    customPlot->plotLayout()->addElement(0, 0, title);
+    customPlot->plotLayout()->addElement(2, 0, subLayout);
+
+    auto ifaces = this->NetUsage_.size();
+    auto i = 0;
+
+    std::for_each(this->NetUsage_.begin(), this->NetUsage_.end(), [&](NetUsage data)
+    {
+        addGraphData(data, customPlot, i++);
+    });
+
+
+    subLayout->setMargins(QMargins(5, 0, 1, 5));
+    subLayout->addElement(0, 0, customPlot->legend);
+
+    customPlot->legend->setWrap(ifaces / 6);
+    customPlot->legend->setRowSpacing(1);
+    customPlot->legend->setColumnSpacing(3);
+    customPlot->legend->setFillOrder(QCPLayoutGrid::FillOrder::foColumnsFirst, true);
+
+    auto rowStretchFactor = 0.2;
+    if ((double)(ifaces / 6) > 1.0)
+        rowStretchFactor *= (double)(ifaces / 6);
+
+    customPlot->plotLayout()->setRowStretchFactor(2, rowStretchFactor);
+}
+
+void NetMonitor::connectSignalSlot(QCustomPlot *customPlot)
+{
+    QObject::connect(customPlot->xAxis, SIGNAL(rangeChanged(QCPRange)),
+                     customPlot->xAxis2, SLOT(setRange(QCPRange)));
+
+    QObject::connect(customPlot->yAxis, SIGNAL(rangeChanged(QCPRange)),
+                     customPlot->yAxis2, SLOT(setRange(QCPRange)));
 }
 
 void NetMonitor::netStatGet()
@@ -263,7 +237,7 @@ void NetMonitor::netStatGet()
 
     if (getifaddrs(&ifaddr) == -1)
     {
-        throw "getifaddrs";
+        throw "[NetMonitor] Can't get ifaddrs info";
     }
 
     for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
@@ -273,10 +247,10 @@ void NetMonitor::netStatGet()
         {
             struct rtnl_link_stats *stats = (struct rtnl_link_stats *)ifa->ifa_data;
 
-            this->NetUsage_[i].txBandwidth_ = (stats->tx_bytes - this->NetUsage_[i].txBytes_) / 1024.0;
+            this->NetUsage_[i].txBandwidth_ = (stats->tx_bytes - this->NetUsage_[i].txBytes_) / (double)Kib;
             this->NetUsage_[i].txBytes_     = stats->tx_bytes;
 
-            this->NetUsage_[i].rxBandwidth_ = (stats->rx_bytes - this->NetUsage_[i].rxBytes_) / 1024.0;
+            this->NetUsage_[i].rxBandwidth_ = (stats->rx_bytes - this->NetUsage_[i].rxBytes_) / (double)Kib;
             this->NetUsage_[i].rxBytes_     = stats->rx_bytes;
             i++;
         }

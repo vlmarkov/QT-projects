@@ -94,6 +94,15 @@ void CpuMonitor::hwUsageShow()
         this->readStatsCpu();
         for (auto i = 0; i < this->hwCoresNum_; ++i) {
             this->userInterface_->CpuUsageGraph->graph(i)->addData(timePoint, this->cpuUsage_[i]);
+
+            int  x   = (int)this->cpuUsage_[i];
+            auto tmp = QString(QString("core ") +
+                    QString::number(i) +
+                    QString(" ") +
+                    QString::number(x) +
+                    QString("%"));
+
+            this->userInterface_->CpuUsageGraph->graph(i)->setName(tmp);
         }
         lastTimePoint = timePoint;
 
@@ -107,14 +116,14 @@ void CpuMonitor::createGraph()
     auto *customPlot = this->userInterface_->CpuUsageGraph;
 
     customPlot->axisRect()->setupFullAxesBox();
-    customPlot->yAxis->setRange(0.0, 100.0);
+    customPlot->yAxis->setRange(0.0, 101.0);
     customPlot->yAxis->setLabel("Usage, %");
     customPlot->xAxis->setLabel("Time, sec");
 
     this->title = new QCPTextElement(customPlot);
     this->subLayout = new QCPLayoutGrid;
 
-    title->setText("CPU Usage Graph");
+    title->setText("CPU Resource Usage");
     title->setFont(QFont("sans", 12, QFont::Bold));
 
     customPlot->plotLayout()->insertRow(0);
@@ -123,9 +132,11 @@ void CpuMonitor::createGraph()
     customPlot->plotLayout()->addElement(0, 0, title);
     customPlot->plotLayout()->addElement(2, 0, subLayout);
 
-    for (auto i = 0; i != this->hwCoresNum_; ++i) {
+    auto cores = this->hwCoresNum_;
+
+    for (auto i = 0; i != cores; ++i) {
         customPlot->addGraph();
-        customPlot->graph(i)->setName(QString(QString("core ") + QString::number(i)));
+        // TODO color generator
         switch (i)
         {
             case 0:  customPlot->graph(i)->setPen(QPen(QColor(0, 0, 255))); break;
@@ -138,14 +149,21 @@ void CpuMonitor::createGraph()
             case 7:  customPlot->graph(i)->setPen(QPen(QColor(10, 250, 200))); break;
             default: customPlot->graph(i)->setPen(QPen(QColor(0, 0, 0))); break;
         }
-
     }
 
     this->subLayout->setMargins(QMargins(5, 0, 1, 5));
     this->subLayout->addElement(0, 0, customPlot->legend);
 
-    customPlot->legend->setFillOrder(QCPLegend::foColumnsFirst);
-    customPlot->plotLayout()->setRowStretchFactor(2, 0.1);
+    customPlot->legend->setWrap(cores / 6);
+    customPlot->legend->setRowSpacing(1);
+    customPlot->legend->setColumnSpacing(2);
+    customPlot->legend->setFillOrder(QCPLayoutGrid::FillOrder::foColumnsFirst,true);
+
+    auto rowStretchFactor = 0.1;
+    if ((double)(cores / 6) > 1.0)
+        rowStretchFactor = (double)(cores / 6)* 0.1;
+
+    customPlot->plotLayout()->setRowStretchFactor(2, rowStretchFactor);
 }
 
 void CpuMonitor::connectSignalSlot()
@@ -247,8 +265,13 @@ void CpuMonitor::PrintStats(const std::vector<CPUData> & entries1,
 
         const float TOTAL_TIME	= ACTIVE_TIME + IDLE_TIME;
 
-        //std::cout << (100.f * ACTIVE_TIME / TOTAL_TIME) << "%";
+        //std::cout << (100.f * ACTIVE_TIME / TOTAL_TIME) << "%" << std::endl;
 
-        this->cpuUsage_[i - 1] = (100.f * ACTIVE_TIME / TOTAL_TIME);
+        float usage = (100.f * ACTIVE_TIME / TOTAL_TIME);
+
+        //if (usage > 99.0)
+        //    usage = 99.0;
+
+        this->cpuUsage_[i - 1] = usage;
     }
 }

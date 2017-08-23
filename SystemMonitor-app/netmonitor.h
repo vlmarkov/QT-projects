@@ -40,8 +40,16 @@ class NetMonitor : public AbstractSystemMonitor
         QCPTextElement *titleRx_;
         QCPLayoutGrid  *subLayoutRx_;
 
-        void createGraph();
-        void connectSignalSlot();
+        void createGraph(QCustomPlot    *customPlot,
+                         QString         titleText,
+                         QCPTextElement *title,
+                         QCPLayoutGrid  *subLayout);
+
+        void addGraphData(NetUsage    &object,
+                          QCustomPlot *customPlot,
+                          int          i);
+
+        void connectSignalSlot(QCustomPlot *customPlot);
         void netStatGet();
 };
 

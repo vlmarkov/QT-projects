@@ -17,33 +17,35 @@ void RamMonitor::hwInfoGet()
     struct sysinfo sysInfo;
 
     if (sysinfo(&sysInfo) != 0) {
-        throw "Can't get sysinfo()";
+        throw "[RamMonitor] Can't get ram info";
     }
 
-    this->totalRam_  = sysInfo.totalram  / Kib;
-    this->freeRam_   = sysInfo.freeram   / Kib;
-    this->sharedRam_ = sysInfo.sharedram / Kib;
-    this->bufferRam_ = sysInfo.bufferram / Kib;
-    this->totalSwap_ = sysInfo.totalswap / Kib;
-    this->freeSwap_  = sysInfo.freeswap  / Kib;
+    this->totalRam_  = QString::number(sysInfo.totalram  / Kib);
+    this->freeRam_   = QString::number(sysInfo.freeram   / Kib);
+    this->sharedRam_ = QString::number(sysInfo.sharedram / Kib);
+    this->bufferRam_ = QString::number(sysInfo.bufferram / Kib);
+    this->totalSwap_ = QString::number(sysInfo.totalswap / Kib);
+    this->freeSwap_  = QString::number(sysInfo.freeswap  / Kib);
 }
 
 void RamMonitor::hwInfoShow()
 {
-    this->userInterface_->TotalRam_txt->setText(std::to_string(this->totalRam_).c_str());
-    this->userInterface_->FreeRam_txt->setText(std::to_string(this->freeRam_).c_str());
-    this->userInterface_->SharedRam_txt->setText(std::to_string(this->sharedRam_).c_str());
-    this->userInterface_->BufferedRam_txt->setText(std::to_string(this->bufferRam_).c_str());
-    this->userInterface_->TotalSwap_txt->setText(std::to_string(this->totalSwap_).c_str());
-    this->userInterface_->FreeSwapRam_txt->setText(std::to_string(this->freeSwap_).c_str());
+    auto ui = this->userInterface_;
+
+    ui->TotalRam_txt->setText(this->totalRam_);
+    ui->FreeRam_txt->setText(this->freeRam_);
+    ui->SharedRam_txt->setText(this->sharedRam_);
+    ui->BufferedRam_txt->setText(this->bufferRam_);
+    ui->TotalSwap_txt->setText(this->totalSwap_);
+    ui->FreeSwapRam_txt->setText(this->freeSwap_);
 }
 
 void RamMonitor::hwUsageGather(bool activate)
 {
-
+    return;
 }
 
 void RamMonitor::hwUsageShow()
 {
-
+    return;
 }

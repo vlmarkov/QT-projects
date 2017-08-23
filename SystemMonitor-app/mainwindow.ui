@@ -182,9 +182,9 @@
      <widget class="QLabel" name="L1cache_txt">
       <property name="geometry">
        <rect>
-        <x>120</x>
-        <y>110</y>
-        <width>91</width>
+        <x>540</x>
+        <y>20</y>
+        <width>151</width>
         <height>16</height>
        </rect>
       </property>
@@ -201,8 +201,8 @@
      <widget class="QLabel" name="L1cache_label">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>110</y>
+        <x>440</x>
+        <y>20</y>
         <width>91</width>
         <height>17</height>
        </rect>
@@ -217,8 +217,8 @@
      <widget class="QLabel" name="L2cache_label">
       <property name="geometry">
        <rect>
-        <x>240</x>
-        <y>110</y>
+        <x>440</x>
+        <y>60</y>
         <width>91</width>
         <height>17</height>
        </rect>
@@ -233,9 +233,9 @@
      <widget class="QLabel" name="L2cache_txt">
       <property name="geometry">
        <rect>
-        <x>340</x>
-        <y>110</y>
-        <width>91</width>
+        <x>540</x>
+        <y>60</y>
+        <width>151</width>
         <height>16</height>
        </rect>
       </property>
@@ -252,8 +252,8 @@
      <widget class="QLabel" name="LogCores_label">
       <property name="geometry">
        <rect>
-        <x>240</x>
-        <y>130</y>
+        <x>440</x>
+        <y>80</y>
         <width>91</width>
         <height>17</height>
        </rect>
@@ -268,9 +268,9 @@
      <widget class="QLabel" name="HwCores_txt">
       <property name="geometry">
        <rect>
-        <x>120</x>
-        <y>130</y>
-        <width>91</width>
+        <x>540</x>
+        <y>40</y>
+        <width>151</width>
         <height>16</height>
        </rect>
       </property>
@@ -287,9 +287,9 @@
      <widget class="QLabel" name="LogCores_txt">
       <property name="geometry">
        <rect>
-        <x>340</x>
-        <y>130</y>
-        <width>91</width>
+        <x>540</x>
+        <y>80</y>
+        <width>151</width>
         <height>16</height>
        </rect>
       </property>
@@ -306,8 +306,8 @@
      <widget class="QLabel" name="HwCores_label">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>130</y>
+        <x>440</x>
+        <y>40</y>
         <width>91</width>
         <height>17</height>
        </rect>
@@ -323,9 +323,9 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>160</y>
-        <width>411</width>
-        <height>321</height>
+        <y>120</y>
+        <width>671</width>
+        <height>361</height>
        </rect>
       </property>
      </widget>
@@ -928,18 +928,18 @@
       <property name="geometry">
        <rect>
         <x>20</x>
-        <y>30</y>
-        <width>321</width>
-        <height>241</height>
+        <y>10</y>
+        <width>671</width>
+        <height>231</height>
        </rect>
       </property>
      </widget>
      <widget class="QCustomPlot" name="NetUsageGraphTx" native="true">
       <property name="geometry">
        <rect>
-        <x>350</x>
-        <y>30</y>
-        <width>321</width>
+        <x>20</x>
+        <y>250</y>
+        <width>671</width>
         <height>241</height>
        </rect>
       </property>

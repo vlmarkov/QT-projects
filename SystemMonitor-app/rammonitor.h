@@ -19,12 +19,12 @@ class RamMonitor : public AbstractSystemMonitor
     private:
         Ui::MainWindow* userInterface_;
 
-        unsigned long totalRam_;  // Total usable main memory size
-        unsigned long freeRam_;   // Available memory size
-        unsigned long sharedRam_; // Amount of shared memory
-        unsigned long bufferRam_; // Memory used by buffers
-        unsigned long totalSwap_; // Total swap space size
-        unsigned long freeSwap_;  // Swap space still available
+        QString totalRam_;  // Total usable main memory size
+        QString freeRam_;   // Available memory size
+        QString sharedRam_; // Amount of shared memory
+        QString bufferRam_; // Memory used by buffers
+        QString totalSwap_; // Total swap space size
+        QString freeSwap_;  // Swap space still available
 };
 
 #endif /* _RAM_MONITOR_H_ */
