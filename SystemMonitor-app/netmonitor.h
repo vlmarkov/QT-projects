@@ -1,6 +1,7 @@
 #ifndef _NET_MONITOR_H_
 #define _NET_MONITOR_H_
 
+#include "abstractdrawer.h"
 #include "abstractsystemmonitor.h"
 #include "ui_mainwindow.h"
 
@@ -9,6 +10,9 @@
 class NetUsage
 {
     public:
+        NetUsage(QString name, QString addr, long txBytes, long rxBytes,  double txBandwidth, double  rxBandwidth) :
+            ifName_(name), ipAddr_(addr), txBytes_(txBytes), rxBytes_(rxBytes), txBandwidth_(txBandwidth), rxBandwidth_(rxBandwidth) {}
+
         QString ifName_;
         QString ipAddr_;
         long    txBytes_;
@@ -32,27 +36,14 @@ class NetMonitor : public AbstractSystemMonitor
         void hwUsageShowRealTime();
 
     private:
-        std::vector<NetUsage> NetUsage_;
         Ui::MainWindow* userInterface_;
+        AbstractDrawer* drawerRx_;
+        AbstractDrawer* drawerTx_;
 
-        QCPTextElement *titleTx_;
-        QCPLayoutGrid  *subLayoutTx_;
-        QCPTextElement *titleRx_;
-        QCPLayoutGrid  *subLayoutRx_;
+        std::vector<NetUsage> NetUsage_;
 
-        void createGraph(QCustomPlot    *customPlot,
-                         QString         titleText,
-                         QCPTextElement *title,
-                         QCPLayoutGrid  *subLayout);
-
-        void addGraphData(NetUsage    &object,
-                          QCustomPlot *customPlot,
-                          int          i);
-
-        void connectSignalSlot(QCustomPlot *customPlot);
+        void createGraph();
         void netStatGet();
 };
 
-
 #endif /* _NET_MONITOR_H_ */
-

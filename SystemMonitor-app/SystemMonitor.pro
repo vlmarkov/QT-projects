@@ -16,10 +16,11 @@ SOURCES += main.cpp\
            mainwindow.cpp \
            cpumonitor.cpp \
            libs/qcustomplot/qcustomplot.cpp \
-    rammonitor.cpp \
-    hddmonitor.cpp \
-    gpumonitor.cpp \
-    netmonitor.cpp
+           rammonitor.cpp \
+           hddmonitor.cpp \
+           gpumonitor.cpp \
+           netmonitor.cpp \
+           qcustomdrawer.cpp
 
 HEADERS  += mainwindow.h \
             abstractsystemmonitor.h \
@@ -28,10 +29,12 @@ HEADERS  += mainwindow.h \
             libs/cpuid/libcpuid_types.h \
             libs/cpuid/libcpuid.h \
             cpumonitor.h \
-    rammonitor.h \
-    hddmonitor.h \
-    gpumonitor.h \
-    netmonitor.h
+            rammonitor.h \
+            hddmonitor.h \
+            gpumonitor.h \
+            netmonitor.h \
+            abstractdrawer.h \
+            qcustomdrawer.h
 
 FORMS    += mainwindow.ui
 
