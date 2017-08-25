@@ -1,8 +1,8 @@
 #ifndef _CPU_MONITOR_H_
 #define _CPU_MONITOR_H_
 
+#include "abstractdrawer.h"
 #include "abstractsystemmonitor.h"
-
 #include "ui_mainwindow.h"
 
 #include <chrono>
@@ -35,6 +35,18 @@ typedef struct {
 
 class CpuMonitor : public AbstractSystemMonitor
 {
+    public:
+        CpuMonitor(Ui::MainWindow* ui);
+        ~CpuMonitor();
+
+        void hwInfoGet();
+        void hwInfoShow();
+        void hwUsageGather(bool activate);
+        void hwUsageShow();
+
+    public slots:
+        void hwUsageShowRealTime();
+
     private:
         int32_t l1cache_;
         int32_t l2cache_;
@@ -51,12 +63,12 @@ class CpuMonitor : public AbstractSystemMonitor
         std::vector<long double> cpuUsage_;
 
         Ui::MainWindow* userInterface_;
+        AbstractDrawer* drawerCpuUsage_;
 
-        QCPTextElement *title;
-        QCPLayoutGrid *subLayout;
+        QCPTextElement* title;
+        QCPLayoutGrid*  subLayout;
 
         void createGraph();
-        void connectSignalSlot();
 
         void parseCpuFrequencyUsage(std::string& str, int coreNumber);
         void readCpuFrequencyUsage();
@@ -69,18 +81,6 @@ class CpuMonitor : public AbstractSystemMonitor
         size_t getActiveTime(const CPUData & e);
         void PrintStats(const std::vector<CPUData> & entries1,
                         const std::vector<CPUData> & entries2);
-
-    public:
-        CpuMonitor(Ui::MainWindow* ui);
-        ~CpuMonitor();
-
-        void hwInfoGet();
-        void hwInfoShow();
-        void hwUsageGather(bool activate);
-        void hwUsageShow();
-
-    public slots:
-        void hwUsageShowRealTime();
 };
 
 

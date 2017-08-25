@@ -1,4 +1,5 @@
 #include "cpumonitor.h"
+#include "qcustomdrawer.h"
 
 #include <stdlib.h>
 #include <iostream>
@@ -13,14 +14,13 @@
 
 CpuMonitor::CpuMonitor(Ui::MainWindow* ui)
 {
-    this->userInterface_ = ui;
+    this->userInterface_  = ui;
+    this->drawerCpuUsage_ = new QCustomDrawer(this->userInterface_->CpuUsageGraph);
 }
 
 CpuMonitor::~CpuMonitor()
 {
-    // TODO
-    delete title;
-    delete subLayout;
+    delete this->drawerCpuUsage_;
 }
 
 void CpuMonitor::hwInfoGet()
@@ -29,19 +29,20 @@ void CpuMonitor::hwInfoGet()
     struct cpu_id_t data;
 
     if (!cpuid_present())
-        throw "Your CPU doesn't support CPUID!";
+        throw "[CpuMonitor] Your CPU doesn't support CPUID!";
 
     if (cpuid_get_raw_data(&raw) < 0)
-        throw "Can't get the CPUID raw data";
+        throw "[CpuMonitor] Can't get the CPUID raw data";
 
     if (cpu_identify(&raw, &data) < 0)
-        throw "CPU identification failed";
+        throw "[CpuMonitor] CPU identification failed";
 
-#if __x86_64__
-    this->arch_         = "x86-64" ;
-#else
-    this->arch_         = "x86" ;
-#endif
+    #if __x86_64__
+        this->arch_         = "x86-64" ;
+    #else
+        this->arch_         = "x86" ;
+    #endif
+
     this->vendor_       = data.vendor_str;
     this->codeName_     = data.cpu_codename;
     this->brandName_    = data.brand_str;
@@ -53,7 +54,7 @@ void CpuMonitor::hwInfoGet()
     this->maxFrequency_ = readCpuFrequencyMax();
 
     // Create cpu-statistic-usage vector
-    this->cpuUsage_ = std::vector<long double> (this->hwCoresNum_);;
+    this->cpuUsage_ = std::vector<long double> (this->hwCoresNum_);
 }
 
 void CpuMonitor::hwInfoShow()
@@ -75,7 +76,6 @@ void CpuMonitor::hwUsageGather(bool activate)
         return;
 
     this->createGraph();
-    this->connectSignalSlot();
 
     // Warm-up cpu statistic
     this->readStatsCpu();
@@ -84,95 +84,71 @@ void CpuMonitor::hwUsageGather(bool activate)
 void CpuMonitor::hwUsageShow()
 {
     static QTime time(QTime::currentTime());
-    static double lastTimePoint = 0;
+    static double lastTimePoint1 = 0;
+    static double lastTimePoint2 = 0;
 
     // Calculate two new data points:
-    double timePoint = time.elapsed()/1000.0;
+    double timePoint1 = time.elapsed()/1000.0;
+    double timePoint2 = time.elapsed()/1000.0;
 
-    if (timePoint - lastTimePoint > 0.500)
-    {
-        this->readStatsCpu();
-        for (auto i = 0; i < this->hwCoresNum_; ++i) {
-            this->userInterface_->CpuUsageGraph->graph(i)->addData(timePoint, this->cpuUsage_[i]);
+    if (timePoint1 - lastTimePoint1 > 0.2) {
+        auto i = 0;
+        for_each(this->cpuUsage_.begin(), this->cpuUsage_.end(), [&](long double usage)
+        {
+            this->drawerCpuUsage_->setPlotData(timePoint1, usage, i);
+            i++;
+        });
 
-            int  x   = (int)this->cpuUsage_[i];
-            auto tmp = QString(QString("core ") +
-                    QString::number(i) +
-                    QString(" ") +
-                    QString::number(x) +
-                    QString("%"));
-
-            this->userInterface_->CpuUsageGraph->graph(i)->setName(tmp);
-        }
-        lastTimePoint = timePoint;
-
+        lastTimePoint1 = timePoint1;
+        this->drawerCpuUsage_->replotCustomPlot(timePoint1, 100.0);
     }
-    this->userInterface_->CpuUsageGraph->xAxis->setRange(timePoint, 40, Qt::AlignRight);
-    this->userInterface_->CpuUsageGraph->replot();
+
+    if (timePoint2 - lastTimePoint2 > 1.0) {
+        this->readStatsCpu();
+        auto i = 0;
+        for_each(this->cpuUsage_.begin(), this->cpuUsage_.end(), [&](long double usage)
+        {
+            QString name;
+
+            name += QString("core ");
+            name += QString::number(i);
+            name += QString(" ");
+            name += QString::number((int)usage);
+            name += QString("%");
+
+            this->drawerCpuUsage_->setPlotName(name, i);
+            i++;
+        });
+        lastTimePoint2 = timePoint2;
+    }
 }
 
 void CpuMonitor::createGraph()
 {
-    auto *customPlot = this->userInterface_->CpuUsageGraph;
+    QString titleText("CPU Resource Usage");
+    QString yLabelText("Usage, %");
+    QString xLabelText("Time, sec");
+    std::pair<double, double> yRange(0.0, 101.0);
+    int dataSize = (int)this->cpuUsage_.size();
 
-    customPlot->axisRect()->setupFullAxesBox();
-    customPlot->yAxis->setRange(0.0, 101.0);
-    customPlot->yAxis->setLabel("Usage, %");
-    customPlot->xAxis->setLabel("Time, sec");
+    this->drawerCpuUsage_->createCustomPlot(titleText, yLabelText, xLabelText, yRange, dataSize, 0.1);
+    this->drawerCpuUsage_->connectSignalSlot();
 
-    this->title = new QCPTextElement(customPlot);
-    this->subLayout = new QCPLayoutGrid;
+    auto i = 0;
+    for_each(this->cpuUsage_.begin(), this->cpuUsage_.end(), [&](long double usage)
+    {
+        QString name;
 
-    title->setText("CPU Resource Usage");
-    title->setFont(QFont("sans", 12, QFont::Bold));
+        name += QString("core ");
+        name += QString::number(i);
+        name += QString(" ");
+        name += QString::number((int)usage);
+        name += QString("%");
 
-    customPlot->plotLayout()->insertRow(0);
-    customPlot->legend->setVisible(true);
-
-    customPlot->plotLayout()->addElement(0, 0, title);
-    customPlot->plotLayout()->addElement(2, 0, subLayout);
-
-    auto cores = this->hwCoresNum_;
-
-    for (auto i = 0; i != cores; ++i) {
-        customPlot->addGraph();
-        // TODO color generator
-        switch (i)
-        {
-            case 0:  customPlot->graph(i)->setPen(QPen(QColor(0, 0, 255))); break;
-            case 1:  customPlot->graph(i)->setPen(QPen(QColor(0, 255, 0))); break;
-            case 2:  customPlot->graph(i)->setPen(QPen(QColor(255, 0, 0))); break;
-            case 3:  customPlot->graph(i)->setPen(QPen(QColor(150, 0, 255))); break;
-            case 4:  customPlot->graph(i)->setPen(QPen(QColor(0, 150, 255))); break;
-            case 5:  customPlot->graph(i)->setPen(QPen(QColor(255, 0, 150))); break;
-            case 6:  customPlot->graph(i)->setPen(QPen(QColor(255, 200, 200))); break;
-            case 7:  customPlot->graph(i)->setPen(QPen(QColor(10, 250, 200))); break;
-            default: customPlot->graph(i)->setPen(QPen(QColor(0, 0, 0))); break;
-        }
-    }
-
-    this->subLayout->setMargins(QMargins(5, 0, 1, 5));
-    this->subLayout->addElement(0, 0, customPlot->legend);
-
-    customPlot->legend->setWrap(cores / 6);
-    customPlot->legend->setRowSpacing(1);
-    customPlot->legend->setColumnSpacing(2);
-    customPlot->legend->setFillOrder(QCPLayoutGrid::FillOrder::foColumnsFirst,true);
-
-    auto rowStretchFactor = 0.1;
-    if ((double)(cores / 6) > 1.0)
-        rowStretchFactor = (double)(cores / 6)* 0.1;
-
-    customPlot->plotLayout()->setRowStretchFactor(2, rowStretchFactor);
-}
-
-void CpuMonitor::connectSignalSlot()
-{
-    QObject::connect(this->userInterface_->CpuUsageGraph->xAxis, SIGNAL(rangeChanged(QCPRange)),
-            this->userInterface_->CpuUsageGraph->xAxis2, SLOT(setRange(QCPRange)));
-
-    QObject::connect(this->userInterface_->CpuUsageGraph->yAxis, SIGNAL(rangeChanged(QCPRange)),
-            this->userInterface_->CpuUsageGraph->yAxis2, SLOT(setRange(QCPRange)));
+        this->drawerCpuUsage_->setPlotName(name, i);
+        this->drawerCpuUsage_->setPlotColor(i);
+        i++;
+    });
 }
 
 uint32_t CpuMonitor::readCpuFrequencyMax()
@@ -265,12 +241,7 @@ void CpuMonitor::PrintStats(const std::vector<CPUData> & entries1,
 
         const float TOTAL_TIME	= ACTIVE_TIME + IDLE_TIME;
 
-        //std::cout << (100.f * ACTIVE_TIME / TOTAL_TIME) << "%" << std::endl;
-
         float usage = (100.f * ACTIVE_TIME / TOTAL_TIME);
-
-        //if (usage > 99.0)
-        //    usage = 99.0;
 
         this->cpuUsage_[i - 1] = usage;
     }

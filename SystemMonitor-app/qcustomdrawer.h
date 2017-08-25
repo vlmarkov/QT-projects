@@ -12,16 +12,17 @@ class QCustomDrawer : public AbstractDrawer
 
         void connectSignalSlot();
 
-        void createCustomPlot(QString                   titleText,
-                              QString                   yLabelText,
-                              QString                   xLabelText,
-                              std::pair<double, double> yRange,
-                              int                       dataSize);
+        void createCustomPlot(QString                   &titleText,
+                              QString                   &yLabelText,
+                              QString                   &xLabelText,
+                              std::pair<double, double> &yRange,
+                              int                        dataSize,
+                              double                     stretchFactor);
 
-        void setPlotName(QString name, int idx);
+        void setPlotName(QString &name, int idx);
         void setPlotColor(int idx);
         void setPlotData(double time, double data, int idx);
-        void replotCustomPlot(double time);
+        void replotCustomPlot(double time, double size);
 
     private:
         QCustomPlot*    customPlot_;

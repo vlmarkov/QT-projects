@@ -23,11 +23,12 @@ void QCustomDrawer::connectSignalSlot()
                      this->customPlot_->yAxis2, SLOT(setRange(QCPRange)));
 }
 
-void QCustomDrawer::createCustomPlot(QString                   titleText,
-                                     QString                   yLabelText,
-                                     QString                   xLabelText,
-                                     std::pair<double, double> yRange,
-                                     int                       dataSize)
+void QCustomDrawer::createCustomPlot(QString                   &titleText,
+                                     QString                   &yLabelText,
+                                     QString                   &xLabelText,
+                                     std::pair<double, double> &yRange,
+                                     int                       dataSize,
+                                     double                    stretchFactor)
 {
     this->customPlot_->axisRect()->setupFullAxesBox();
     this->customPlot_->yAxis->setRange(yRange.first, yRange.second);
@@ -52,18 +53,17 @@ void QCustomDrawer::createCustomPlot(QString                   titleText,
     this->customPlot_->legend->setColumnSpacing(3);
     this->customPlot_->legend->setFillOrder(QCPLayoutGrid::FillOrder::foColumnsFirst, true);
 
-    auto rowStretchFactor = 0.2;
     if ((double)(dataSize / 6) > 1.0)
-        rowStretchFactor *= (double)(dataSize / 6);
+        stretchFactor *= (double)(dataSize / 6);
 
-    this->customPlot_->plotLayout()->setRowStretchFactor(2, rowStretchFactor);
+    this->customPlot_->plotLayout()->setRowStretchFactor(2, stretchFactor);
 
     for (auto i = 0; i < dataSize; ++i) {
         this->customPlot_->addGraph();
     }
 }
 
-void QCustomDrawer::setPlotName(QString name, int idx)
+void QCustomDrawer::setPlotName(QString &name, int idx)
 {
     this->customPlot_->graph(idx)->setName(name);
 }
@@ -94,8 +94,8 @@ void QCustomDrawer::setPlotData(double time, double data, int idx)
     this->customPlot_->graph(idx)->addData(time, data);
 }
 
-void QCustomDrawer::replotCustomPlot(double time)
+void QCustomDrawer::replotCustomPlot(double time, double size)
 {
-    this->customPlot_->xAxis->setRange(time, 100, Qt::AlignRight);
+    this->customPlot_->xAxis->setRange(time, size, Qt::AlignRight);
     this->customPlot_->replot();
 }

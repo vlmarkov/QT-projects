@@ -85,6 +85,7 @@ void NetMonitor::hwUsageGather(bool activate)
 }
 
 void NetMonitor::hwUsageShow()
+
 {
     static QTime time(QTime::currentTime());
     static double lastTimePoint = 0;
@@ -106,8 +107,8 @@ void NetMonitor::hwUsageShow()
 
         lastTimePoint = timePoint;
 
-        this->drawerRx_->replotCustomPlot(timePoint);
-        this->drawerTx_->replotCustomPlot(timePoint);
+        this->drawerRx_->replotCustomPlot(timePoint, 100.0);
+        this->drawerTx_->replotCustomPlot(timePoint, 100.0);
     }
 }
 
@@ -120,10 +121,10 @@ void NetMonitor::createGraph()
     std::pair<double, double> yRange(0.0, 10000.0);
     int dataSize = (int)this->NetUsage_.size();
 
-    this->drawerRx_->createCustomPlot(titleTextRx, yLabelText, xLabelText, yRange, dataSize);
+    this->drawerRx_->createCustomPlot(titleTextRx, yLabelText, xLabelText, yRange, dataSize, 0.2);
     this->drawerRx_->connectSignalSlot();
 
-    this->drawerTx_->createCustomPlot(titleTextTx, yLabelText, xLabelText, yRange, dataSize);
+    this->drawerTx_->createCustomPlot(titleTextTx, yLabelText, xLabelText, yRange, dataSize, 0.2);
     this->drawerTx_->connectSignalSlot();
 
     auto i = 0;
