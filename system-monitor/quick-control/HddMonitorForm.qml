@@ -5,9 +5,7 @@ import QtQuick.Controls 2.2
 import monitor.hdd 1.0
 
 Item {
-    HddMonitor {
-        id: hddMonitor
-    }
+    HddMonitor { id: hddMonitor }
 
     ChartView {
         id: chart

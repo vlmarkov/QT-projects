@@ -17,7 +17,8 @@ SOURCES += main.cpp \
     cpumonitor.cpp \
     osmonitor.cpp \
     rammonitor.cpp \
-    netmonitor.cpp
+    netmonitor.cpp \
+    processmonitor.cpp
 
 RESOURCES += qml.qrc
 
@@ -38,4 +39,5 @@ HEADERS += \
     cpumonitor.h \
     osmonitor.h \
     rammonitor.h \
-    netmonitor.h
+    netmonitor.h \
+    processmonitor.h
