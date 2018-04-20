@@ -18,7 +18,9 @@ TrafficMonitor::TrafficMonitor()
 TrafficMonitor::TrafficMonitor(const QVector<TrafficUsage>& rhs)
 {
     if (rhs.size() != 0)
+    {
         this->usage_ = rhs;
+    }
 }
 
 TrafficMonitor::~TrafficMonitor()
@@ -41,9 +43,7 @@ QVector<TrafficUsage> TrafficMonitor::getNetworkUsage()
     {
         if (ifa->ifa_addr->sa_family == AF_PACKET && ifa->ifa_data != nullptr)
         {
-            auto name = std::string(ifa->ifa_name);
-
-            if (name.compare("lo") == 0)
+            if (std::strcmp(ifa->ifa_name, "lo") == 0)
             {
                 continue;
             }
@@ -57,12 +57,12 @@ QVector<TrafficUsage> TrafficMonitor::getNetworkUsage()
 
     freeifaddrs(ifaddr);
 
-    this->syncBandwidthUsage_(v);
+    this->syncTraffic_(v);
 
     return v;
 }
 
-void TrafficMonitor::syncBandwidthUsage_(QVector<TrafficUsage>& rhs)
+void TrafficMonitor::syncTraffic_(QVector<TrafficUsage>& rhs)
 {
     if (rhs.size() == this->usage_.size())
     {

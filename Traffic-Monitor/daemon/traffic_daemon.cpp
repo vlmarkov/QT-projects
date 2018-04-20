@@ -5,8 +5,10 @@
 #include <thread>
 #include <csignal>
 
+#include <unistd.h>
 #include <syslog.h>
 #include <execinfo.h>
+#include <sys/types.h>
 
 bool TrafficDaemon::quit_ = false;
 
@@ -43,10 +45,13 @@ void TrafficDaemon::startDaemon()
     for (;;)
     {
         std::this_thread::yield();
+
         this->getTraffic_();
 
         if (TrafficDaemon::quit_)
+        {
             break;
+        }
     }
 
     syslog(LOG_NOTICE, "[Traffic-Daemon] Stopped\n");
@@ -67,8 +72,9 @@ void TrafficDaemon::signalTrace_(int sig, siginfo_t *si, void *ptr)
     errorAddr = (void*)((ucontext_t*)ptr)->uc_mcontext.gregs[REG_EIP];
 #endif // __WORDSIZE
 
-    int traceSize = backtrace(trace, 16);
-    trace[1]  = errorAddr;
+    auto traceSize = backtrace(trace, 16);
+
+    trace[1] = errorAddr;
 
     char** messages = backtrace_symbols(trace, traceSize);
     if (messages)

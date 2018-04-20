@@ -1,8 +1,9 @@
 #ifndef _TRAFFIC_MONITOR_H_
 #define _TRAFFIC_MONITOR_H_
 
-#include <QVector>
 #include "traffic_usage.h"
+
+#include <QVector>
 
 class TrafficMonitor
 {
@@ -15,7 +16,7 @@ class TrafficMonitor
 
     private:
         QVector<TrafficUsage> usage_;
-        void syncBandwidthUsage_(QVector<TrafficUsage>& rhs);
+        void syncTraffic_(QVector<TrafficUsage>& rhs);
 };
 
 #endif // _TRAFFIC_MONITOR_H_

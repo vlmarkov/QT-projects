@@ -1,10 +1,10 @@
 #ifndef _TRAFFIC_DAEMON_H_
 #define _TRAFFIC_DAEMON_H_
 
-#include <csignal>
-
 #include "traffic_storage.h"
 #include "traffic_monitor.h"
+
+#include <csignal>
 
 class TrafficDaemon
 {
